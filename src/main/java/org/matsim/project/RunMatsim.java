@@ -1,0 +1,71 @@
+/* *********************************************************************** *
+ * project: org.matsim.*												   *
+ *                                                                         *
+ * *********************************************************************** *
+ *                                                                         *
+ * copyright       : (C) 2008 by the members listed in the COPYING,        *
+ *                   LICENSE and WARRANTY file.                            *
+ * email           : info at matsim dot org                                *
+ *                                                                         *
+ * *********************************************************************** *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *   See also COPYING, LICENSE and WARRANTY file                           *
+ *                                                                         *
+ * *********************************************************************** */
+package org.matsim.project;
+
+import java.util.Scanner;
+
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.RoutingConfigGroup.TeleportedModeParams;
+import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.mobsim.qsim.AbstractQSimModule;
+import org.matsim.core.router.MainModeIdentifier;
+import org.matsim.core.router.TripStructureUtils;
+import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.controler.AbstractModule;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.PlanElement;
+
+/**
+ * @author nagel
+ *
+ */
+public class RunMatsim{
+
+	public static void main(String[] args) {
+
+		Config config;
+		if ( args==null || args.length==0 || args[0]==null ){
+			config = ConfigUtils.loadConfig( "scenarios/sioux-falls/modified/input/config.xml" );
+		} else {
+			config = ConfigUtils.loadConfig( args );
+		}
+		
+		config.controller().setOverwriteFileSetting( OverwriteFileSetting.deleteDirectoryIfExists );
+		config.controller().setLastIteration(20);
+
+		// possibly modify config here
+
+		// ---
+		
+		Scenario scenario = ScenarioUtils.loadScenario(config) ;
+
+		// possibly modify scenario here
+		
+		Controler controler = new Controler( scenario ) ;
+
+
+		long start = System.currentTimeMillis();
+		controler.run();
+		System.out.println("Total Execution Time: " + (System.currentTimeMillis() - start) / 1000.0 + "s");
+	}
+	
+}
