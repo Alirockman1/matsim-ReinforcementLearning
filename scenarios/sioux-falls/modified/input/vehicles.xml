@@ -1,0 +1,43 @@
+<vehicleDefinitions xmlns="http://www.matsim.org/files/dtd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.matsim.org/files/dtd http://www.matsim.org/files/dtd/vehicleDefinitions_v1.0.xsd">
+    <vehicleType id="car">
+        <length meter="7.5"/>
+        <width meter="1.0"/>
+        <maximumVelocity meterPerSecond="44.44"/>
+        <accessTime secondsPerPerson="1.0"/>
+        <egressTime secondsPerPerson="1.0"/>
+        <doorOperation mode="serial"/>
+        <passengerCarEquivalents pce="1.0"/>
+    </vehicleType>
+    
+    <vehicleType id="bike">
+        <length meter="2.5"/>
+        <width meter="1.0"/>
+        <maximumVelocity meterPerSecond="5.55"/>
+        <accessTime secondsPerPerson="1.0"/>
+        <egressTime secondsPerPerson="1.0"/>
+        <passengerCarEquivalents pce="0.5"/>
+    </vehicleType>
+
+    <vehicleType id="pedestrian">
+        <length meter="0.75"/>
+        <width meter="0.75"/>
+        <maximumVelocity meterPerSecond="1.3"/>
+        <accessTime secondsPerPerson="1.0"/>
+        <egressTime secondsPerPerson="1.0"/>
+        <passengerCarEquivalents pce="0.1"/>
+    </vehicleType>
+
+    <vehicleType id="Bus MAN NL323F">
+        <capacity>
+            <seats persons="4"/>        <!-- Scaled for 1% -->
+            <standingRoom persons="5"/> <!-- Sacled for 1% -->
+        </capacity>
+        <length meter="11.5"/>
+        <width meter="1.25"/>
+        <accessTime secondsPerPerson="1.0"/>
+        <egressTime secondsPerPerson="1.0"/>
+        <doorOperation mode="serial"/>
+        <passengerCarEquivalents pce="1.5"/>
+    </vehicleType>
+
+</vehicleDefinitions>
