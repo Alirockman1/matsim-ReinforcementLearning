@@ -8,6 +8,8 @@ import java.util.Set;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 
+//import org.hsqldb.lib.Collection;
+//import org.hsqldb.lib.HashSet;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -16,6 +18,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.StartupListener;
+import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
@@ -47,11 +50,12 @@ public class CustomWithinDayModule implements StartupListener{
 	@Inject private LeastCostPathCalculatorFactory pathCalculatorFactory;
 	@Inject private Map<String,TravelDisutilityFactory> travelDisutilityFactories;
 	@Inject private Map<String,TravelTime> travelTimes;
+	@Inject private MobsimDataProvider mobsimDataProvider;
 
     @Override
 	public void notifyStartup(StartupEvent event) {
-		
 		this.initReplanners();
+		this.initRewardHandler();;
 	}
 
 	private void initReplanners( ) {
@@ -61,7 +65,6 @@ public class CustomWithinDayModule implements StartupListener{
 		// Define the Agent Identifier factory 
 		ActivityEndIdentifierFactory activityEndIdentifierFactory = new ActivityEndIdentifierFactory(this.activityReplanningMap);
 
-		// Probability based filter (optional)
 		ProbabilityFilterFactory duringActivityProbabilityFilterFactory = new ProbabilityFilterFactory(1.0);
 		activityEndIdentifierFactory.addAgentFilterFactory(duringActivityProbabilityFilterFactory);
 
@@ -69,7 +72,7 @@ public class CustomWithinDayModule implements StartupListener{
         Collection<Id<Person>> ids = new HashSet<>();
         ids.add(Id.createPersonId("10434_2"));
 
-        // Custom agent filter
+        // Create agent filter
 		AgentFilterFactory agentFilter = new RLAgentFilterFactory(ids);
         // identifier.addAgentFilter(new RLAgentFilter(ids));
 		activityEndIdentifierFactory.addAgentFilterFactory(agentFilter);
@@ -93,5 +96,21 @@ public class CustomWithinDayModule implements StartupListener{
 		// this.duringActivityReplannerFactory.addIdentifier(this.duringActivityIdentifier);
 		// this.withinDayEngine.addDuringActivityReplannerFactory(this.duringActivityReplannerFactory);
 	}
+
+	private void initRewardHandler() {
+        // 1. Re-use the same IDs you defined in initReplanners
+        Set<Id<Person>> ids = new HashSet<>();
+        ids.add(Id.createPersonId("10434_2"));
+
+        // 2. Instantiate the handler
+        RewardHandler rewardHandler = new RewardHandler(this.mobsimDataProvider, this.scenario, ids);
+		
+        // 3. Register it with the injected EventsManager
+        this.eventsManager.addHandler(rewardHandler);
+
+		System.out.println("Handler successfully bound to EventsManager.");
+        
+        //WithinDayLogger.LOGGER.info("RewardHandler successfully bound to EventsManager.");
+    }
 
 }

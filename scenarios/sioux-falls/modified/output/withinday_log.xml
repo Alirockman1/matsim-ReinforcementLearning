@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<withinDayReplanningLog>
+<iteration id="0">
+    <simTime seconds="30224.0" display="08:23:44">
+        <agent id="10434_2">
+            <mode>bike</mode>
+        </agent>
+<iteration id="0">
+    <simTime seconds="64354.0" display="17:52:34">
+        <agent id="10434_2">
+            <mode>bike</mode>
+        </agent>

@@ -34,7 +34,6 @@ public class SiouxFallsWithinDayRunner{
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controler controler = new Controler(scenario);
 
-        // Installing the custom iteration tracker within th eqsim environment
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
@@ -48,7 +47,6 @@ public class SiouxFallsWithinDayRunner{
             }
         });
         
-        // Overriding the iteration base qsim with the within day module
         controler.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
@@ -64,7 +62,6 @@ public class SiouxFallsWithinDayRunner{
                 }
         });
 
-        // Start timer
         long start = System.currentTimeMillis();
         controler.run();
         System.out.println("Total Execution Time: " + (System.currentTimeMillis() - start) / 1000.0 + "s");

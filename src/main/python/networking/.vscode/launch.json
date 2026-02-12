@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "TestConnection",
+            "request": "launch",
+            "mainClass": "TestConnection",
+            "projectName": "FastAPI_9ffe9899"
+        },
+        2
+    ]
+}
