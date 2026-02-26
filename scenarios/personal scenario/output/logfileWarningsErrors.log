@@ -1,0 +1,19 @@
+2026-01-07T19:29:37,840  WARN ScoringConfigGroup$ScoringParameterSet:1630 marginal utl of wait set to: -0.84. Setting this different from zero is discouraged since there is already the marginal utility of time as a resource. The parameter was also used in the past for pt routing; if you did that, consider setting the new parameter waitingPt instead.
+2026-01-07T19:29:37,972  WARN PrepareForSimImpl:269 'usePersonIdForMissingVehicleId' is deprecated. It will be removed soon. Use
+2026-01-07T19:29:37,973  WARN PrepareForSimImpl:270 		config.qsim().setUsePersonIdForMissingVehicleId( false );
+2026-01-07T19:29:37,974  WARN PrepareForSimImpl:271 in code, and 
+2026-01-07T19:29:37,975  WARN PrepareForSimImpl:272 	<module name="qsim" >
+2026-01-07T19:29:37,977  WARN PrepareForSimImpl:273 		<param name="usePersonIdForMissingVehicleId" value="false" />
+2026-01-07T19:29:37,978  WARN PrepareForSimImpl:274 in the config xml.
+2026-01-07T19:29:38,239  WARN RandomizingTimeDistanceTravelDisutilityFactory:113 There will be no routing randomness for mode=car. The randomization of the travel disutility requires the monetary distance rate to be different than zero. Continuing anyway.
+2026-01-07T19:29:38,240  WARN RandomizingTimeDistanceTravelDisutilityFactory:115 You can also set the width of the routing randomness to zero:
+2026-01-07T19:29:38,241  WARN RandomizingTimeDistanceTravelDisutilityFactory:116 		config.routing().setRoutingRandomness( 0. );
+2026-01-07T19:29:38,243  WARN RandomizingTimeDistanceTravelDisutilityFactory:117 in code, or
+2026-01-07T19:29:38,245  WARN RandomizingTimeDistanceTravelDisutilityFactory:118 	<module name="routing" >
+2026-01-07T19:29:38,247  WARN RandomizingTimeDistanceTravelDisutilityFactory:119 		<param name="routingRandomness" value="0." />
+2026-01-07T19:29:38,266  WARN RandomizingTimeDistanceTravelDisutilityFactory:120 in the xml config
+2026-01-07T19:29:42,740  WARN ObjectAttributesConverter:96 No AttributeConverter found for class org.matsim.api.core.v01.Id$IdImpl. Not all attribute values can be converted.
+2026-01-07T19:29:42,741  WARN ObjectAttributesConverter:96 No AttributeConverter found for class org.matsim.api.core.v01.Id$IdImpl. Not all attribute values can be converted.
+2026-01-07T19:29:46,808  WARN ExpBetaPlanChanger:102 Would make sense to revise this once more.  See comments in code.  kai, nov08
+2026-01-07T19:29:50,298  WARN ObjectAttributesConverter:96 No AttributeConverter found for class org.matsim.api.core.v01.Id$IdImpl. Not all attribute values can be converted.
+2026-01-07T19:29:50,301  WARN ObjectAttributesConverter:96 No AttributeConverter found for class org.matsim.api.core.v01.Id$IdImpl. Not all attribute values can be converted.

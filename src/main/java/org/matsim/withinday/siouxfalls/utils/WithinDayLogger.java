@@ -19,7 +19,7 @@ public class WithinDayLogger {
         initXmlFile();
     }
 
-private void initXmlFile() {
+    private void initXmlFile() {
         try {
             File file = new File(logPath);
             if (file.getParentFile() != null) file.getParentFile().mkdirs();

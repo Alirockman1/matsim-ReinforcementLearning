@@ -1,0 +1,8 @@
+agentID,linkID,departureTime,plannedArrivalTime,ArrivalTime,travelDistance,carAvailability,mode,timeDelay,travelTimeSeconds,numberOfTransfers,travelDisutility,startDayMode
+10434_2,42145829_4,8:23:44,7:57:24,12:29:16,6034.4,FALSE,bike,-16312,281,0,-2.62,bike
+10434_2,238011047_0,17:52:34,0:00:00,18:38:22,3565.81,FALSE,pedestrian,-67102,2431,0,-12.56,bike
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+,,,,,,,,,,,,
