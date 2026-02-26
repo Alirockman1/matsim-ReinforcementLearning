@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "SiouxFallsWithinDayRunner",
+            "request": "launch",
+            "mainClass": "org.matsim.withinday.siouxfalls.src.SiouxFallsWithinDayRunner",
+            "projectName": "matsim-example-project"
+        },
+        {
+            "type": "java",
+            "name": "RunMatsim",
+            "request": "launch",
+            "mainClass": "org.matsim.project.RunMatsim",
+            "projectName": "matsim-example-project"
+        },
+        2
+    ]
+}

@@ -1,0 +1,23 @@
+2026-02-25T21:31:24,476  WARN ScoringConfigGroup$ScoringParameterSet:1630 marginal utl of wait set to: -0.84. Setting this different from zero is discouraged since there is already the marginal utility of time as a resource. The parameter was also used in the past for pt routing; if you did that, consider setting the new parameter waitingPt instead.
+2026-02-25T21:31:25,070  WARN XY2LinksForFacilities:51 There is no link for at least a facility. Assigning links for such facilities from coords.
+2026-02-25T21:31:25,074  WARN XY2LinksForFacilities:52  This message given only once.
+2026-02-25T21:31:25,773  WARN PrepareForSimImpl:269 'usePersonIdForMissingVehicleId' is deprecated. It will be removed soon. Use
+2026-02-25T21:31:25,775  WARN PrepareForSimImpl:270 		config.qsim().setUsePersonIdForMissingVehicleId( false );
+2026-02-25T21:31:25,776  WARN PrepareForSimImpl:271 in code, and 
+2026-02-25T21:31:25,778  WARN PrepareForSimImpl:272 	<module name="qsim" >
+2026-02-25T21:31:25,779  WARN PrepareForSimImpl:273 		<param name="usePersonIdForMissingVehicleId" value="false" />
+2026-02-25T21:31:25,780  WARN PrepareForSimImpl:274 in the config xml.
+2026-02-25T21:31:38,000  WARN QueueWithBuffer:515 Link 237059098_1_sidewalk too small: enlarge storage capacity from: 0.27775 Vehicles to: 2.8253834590384614 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,002  WARN QueueWithBuffer:515 Link 9902762_1_sidewalk too small: enlarge storage capacity from: 2.6995486933333335 Vehicles to: 43.25767209076923 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,003  WARN QueueWithBuffer:515 Link 73803813_1_sidewalk too small: enlarge storage capacity from: 5.797440253333334 Vehicles to: 92.8984055978846 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,004  WARN QueueWithBuffer:515 Link 9905412_0_r_sidewalk too small: enlarge storage capacity from: 1.3395424533333333 Vehicles to: 21.46487979307692 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,005  WARN QueueWithBuffer:515 Link 236805320_2L3_sidewalk too small: enlarge storage capacity from: 6.35116548 Vehicles to: 101.77131992711537 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,006  WARN QueueWithBuffer:515 Link 237172233_0_sidewalk too small: enlarge storage capacity from: 6.341838840000001 Vehicles to: 101.62186948903846 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,008  WARN QueueWithBuffer:515 Link 237784508_4_r_sidewalk too small: enlarge storage capacity from: 5.359066386666667 Vehicles to: 85.8738858978846 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,011  WARN QueueWithBuffer:515 Link 9904814_7_rL1_sidewalk too small: enlarge storage capacity from: 5.408024080000001 Vehicles to: 86.65838585884615 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,018  WARN QueueWithBuffer:515 Link 9903665_2_r_sidewalk too small: enlarge storage capacity from: 2.6288444533333335 Vehicles to: 42.12470462961538 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,019  WARN QueueWithBuffer:515 Link 236796987_5_sidewalk too small: enlarge storage capacity from: 2.8883091600000004 Vehicles to: 46.28237706865385 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,023  WARN QueueWithBuffer:515 Link 236799143_0_sidewalk too small: enlarge storage capacity from: 1.1398134800000002 Vehicles to: 18.2644150425 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-02-25T21:31:38,025  WARN QueueWithBuffer:518 Additional warnings of this type are suppressed.
+2026-02-25T21:32:23,268  WARN ObjectAttributesConverter:96 No AttributeConverter found for class org.matsim.api.core.v01.Id$IdImpl. Not all attribute values can be converted.
+2026-02-25T21:32:23,292  WARN ObjectAttributesConverter:96 No AttributeConverter found for class org.matsim.api.core.v01.Id$IdImpl. Not all attribute values can be converted.

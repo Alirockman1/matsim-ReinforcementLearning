@@ -1,0 +1,17 @@
+============================================================
+TIMESTAMP: 2026-02-17 16:02:02 | AGENT: 10434_2
+------------------------------------------------------------
+STATE (S0):
+  - Link ID: 238011047_0
+  - Departure: 17:52:34 (64354.0s)
+  - Car Available: False
+  - Possible Modes: ['pt', 'bike', 'pedestrian']
+  - Expected Arrival: 00:00:00
+ACTION (A0): pedestrian
+REWARD (R1): 872440452.648
+  - Actual Travel Time: 2431.0s
+  - Distance: 3565.81m
+  - Delays: 0.0s
+  - Transfers: 0
+============================================================
+

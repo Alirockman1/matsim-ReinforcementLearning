@@ -1,0 +1,17 @@
+============================================================
+TIMESTAMP: 2026-02-25 21:26:25 | AGENT: 10048_4
+------------------------------------------------------------
+STATE (S0):
+  - Link ID: 42145829_4
+  - Departure: 08:00:00 (28800.0s)
+  - Car Available: False
+  - Possible Modes: ['pt', 'bike', 'pedestrian']
+  - Expected Arrival: 08:13:42
+ACTION (A0): pt
+REWARD (R1): 0.5362210805339621
+  - Actual Travel Time: 531.0s
+  - Distance: 1483.59m
+  - Delays: 0.0s
+  - Transfers: 0
+============================================================
+
