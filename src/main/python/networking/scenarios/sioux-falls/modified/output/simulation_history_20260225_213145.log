@@ -1,0 +1,17 @@
+============================================================
+TIMESTAMP: 2026-02-25 21:31:45 | AGENT: 10441_1
+------------------------------------------------------------
+STATE (S0):
+  - Link ID: 9902306_0
+  - Departure: 07:35:01 (27301.0s)
+  - Car Available: False
+  - Possible Modes: ['pt', 'bike', 'pedestrian']
+  - Expected Arrival: 07:50:01
+ACTION (A0): pt
+REWARD (R1): 0.35633561664810065
+  - Actual Travel Time: 550.0s
+  - Distance: 1172.14m
+  - Delays: 0.0s
+  - Transfers: 0
+============================================================
+

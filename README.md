@@ -1,78 +1,69 @@
-# matsim-ReinforcementLearning
-Dynamic Mode Choice: An extension to the matsim withinday module for reinforcement learning choice modeling (In Development)
+# matsim-example-project
 
-![Status](https://img.shields.io/badge/Status-In--Development-orange)
-![MATSim](https://img.shields.io/badge/Simulation-MATSim-blue)
-![Python](https://img.shields.io/badge/RL--Core-Python-green)
+A small example of how to use MATSim as a library.
 
-This project investigates **Mode Choice Modeling** using Reinforcement Learning (RL) within the **MATSim (Multi-Agent Transport Simulation)** within-day framework. Developed as part of PhD-level research, it aims to replace static discrete choice models with adaptive, behaviorally realistic decision-making policies.
+By default, this project uses the latest (pre-)release. In order to use a different version, edit `pom.xml`.
 
----
+A recommended directory structure is as follows:
+* `src` for sources
+* `original-input-data` for original input data (typically not in MATSim format)
+* `scenarios` for MATSim scenarios, i.e. MATSim input and output data.  A good way is the following:
+  * One subdirectory for each scenario, e.g. `scenarios/mySpecialScenario01`.
+  * This minimally contains a config file, a network file, and a population file.
+  * Output goes one level down, e.g. `scenarios/mySpecialScenario01/output-from-a-good-run/...`.
+  
+  
+### Import into eclipse
 
-## Motivation & Background
+1. download a modern version of eclipse. This should have maven and git included by default.
+1. `file->import->git->projects from git->clone URI` and clone as specified above.  _It will go through a 
+sequence of windows; it is important that you import as 'general project'._
+1. `file->import->maven->existing maven projects`
 
-Traditional transport models often rely on static preferences. However, real-world travelers adapt to experienced outcomes. This project integrates RL into MATSim’s within-day replanning, allowing agents to:
-* **Learn dynamically** from experienced travel times and congestion.
-* **Adapt policies** over repeated simulation iterations.
-* **Optimize decisions** based on evolving system conditions rather than fixed utility functions.
+Sometimes, step 3 does not work, in particular after previously failed attempts.  Sometimes, it is possible to
+right-click to `configure->convert to maven project`.  If that fails, the best thing seems to remove all 
+pieces of the failed attempt in the directory and start over.
 
----
+### Import into IntelliJ
 
-## Reinforcement Learning Formulation
+`File -> New -> Project from Version Control` paste the repository url and hit 'clone'. IntelliJ usually figures out
+that the project is a maven project. If not: `Right click on pom.xml -> import as maven project`.
 
-The mode choice problem is modeled as a **Markov Decision Process (MDP)**:
+### Java Version
 
-| Component | Description |
-| :--- | :--- |
-| **Agent** | Individual travelers within the MATSim environment. |
-| **State ($s$)** | Contextual data: Travel times, congestion, schedule constraints, and socio-demographics. |
-| **Action ($a$)** | Selection of mode: `Car`, `Public Transport`, `Bike`, or `Walk`. |
-| **Reward ($r$)** | Feedback based on generalized travel cost, time disutility, and delay penalties. |
-| **Policy ($\pi$)** | A learned mapping from states to actions to guide future travel behavior. |
+The project uses Java 11. Usually a suitable SDK is packaged within IntelliJ or Eclipse. Otherwise, one must install a 
+suitable sdk manually, which is available [here](https://openjdk.java.net/)
 
----
+### Building and Running it locally
 
-## System Architecture
+You can build an executable jar-file by executing the following command:
 
-The project utilizes a **Hybrid Java–Python Architecture** to leverage the high-performance simulation core of MATSim and the robust machine learning ecosystem of Python.
+```sh
+./mvnw clean package
+```
+
+or on Windows:
+
+```sh
+mvnw.cmd clean package
+```
+
+This will download all necessary dependencies (it might take a while the first time it is run) and create a file `matsim-example-project-0.0.1-SNAPSHOT.jar` in the top directory. This jar-file can either be double-clicked to start the MATSim GUI, or executed with Java on the command line:
+
+```sh
+java -jar matsim-example-project-0.0.1-SNAPSHOT.jar
+```
 
 
 
-### Interaction Workflow:
-1. **MATSim (Java)**: Triggers a within-day replanning event and extracts the agent's current state.
-2. **API Bridge**: Sends state and reward parameters to the Python environment via Socket/REST.
-3. **RL Core (Python)**: Computes the optimal action (mode choice) using the current policy.
-4. **MATSim (Java)**: Receives the action and applies it to the agent within the running simulation.
+### Licenses
+(The following paragraphs need to be adjusted according to the specifications of your project.)
 
----
+The **MATSim program code** in this repository is distributed under the terms of the [GNU General Public License as published by the Free Software Foundation (version 2)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html). The MATSim program code are files that reside in the `src` directory hierarchy and typically end with `*.java`.
 
-## Technical Implementation
+The **MATSim input files, output files, analysis data and visualizations** are licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+<a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a><br /> MATSim input files are those that are used as input to run MATSim. They often, but not always, have a header pointing to matsim.org. They typically reside in the `scenarios` directory hierarchy. MATSim output files, analysis data, and visualizations are files generated by MATSim runs, or by postprocessing.  They typically reside in a directory hierarchy starting with `output`.
 
-### Java–Python Interaction
-* **MATSim Environment**: Manages network loading, agent execution, and the extraction of decision-point data.
-* **Python RL Environment**: Hosts the RL algorithms (e.g., Q-Learning, PPO, or DQN) and evaluates reward signals.
-* **Communication**: Implemented via a lightweight **REST or Socket-based API** to ensure modularity.
+**Other data files**, in particular in `original-input-data`, have their own individual licenses that need to be individually clarified with the copyright holders.
 
-### Within-Day Integration
-Unlike standard MATSim "day-to-day" replanning, this RL agent is embedded in the **Within-Day Module**, allowing for real-time reconsiderations based on actual network conditions.
 
----
-
-## Research Objectives
-* **Behavioral Realism**: Study how learned policies converge compared to classical models.
-* **Performance Analysis**: Observe agent adaptation under heavy congestion.
-* **Scalability**: Enable future extensions into multi-agent learning environments.
-
----
-
-## Development Status
-**Current Phase:** `Initial Integration & Testing`
-
-- [x] Theoretical MDP Formulation
-- [x] Java–Python API Prototype
-- [ ] Finalization of State Representations
-- [ ] Large-scale behavioral convergence testing
-
----
-
-## Contributors

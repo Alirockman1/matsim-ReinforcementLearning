@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
+<config>
+	<module name="agentModeChoice" >
+		<param name="agentFilterList" value="10434_2, 10048_4, 10441_1" />
+		<param name="alpha" value="0.1" />
+		<param name="epsilon" value="0.9" />
+		<param name="gamma" value="0.9" />
+		<param name="modelFileName" value="siouxfalls_v1.pkl" />
+		<param name="modelType" value="QLearning" />
+		<param name="saveInterval" value="10" />
+		<param name="trainingCutoffIteration" value="80" />
+	</module>
+	<module name="controller" >
+		<!-- Default=1000. Last Iteration of a simulation. -->
+		<param name="lastIteration" value="0" />
+		<param name="outputDirectory" value="scenarios\sioux-falls\modified\output" />
+		<!-- Possible values: failIfDirectoryExists,overwriteExistingFiles,deleteDirectoryIfExists -->
+		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
+		<!-- The type of routing (least cost path) algorithm used, may have the values: [Dijkstra, AStarLandmarks, SpeedyALT] -->
+		<param name="routingAlgorithmType" value="Dijkstra" />
+		<!-- iterationNumber % writeEventsInterval == 0 defines in which iterations events are written to a file. `0' disables events writing completely. -->
+		<param name="writeEventsInterval" value="1" />
+		<!-- iterationNumber % writePlansInterval == 0 defines (hopefully) in which iterations plans are written to a file. `0' disables plans writing completely.  Some plans in early iterations are always written -->
+		<param name="writePlansInterval" value="1" />
+	</module>
+	<module name="facilities" >
+		<param name="inputFacilitiesFile" value="facilities.xml.gz" />
+	</module>
+	<module name="network" >
+		<param name="inputNetworkFile" value="networkwithsidewalks.xml" />
+	</module>
+	<module name="plans" >
+		<!-- Possible values: reject,useMainModeIdentifier -->
+		<param name="handlingOfPlansWithoutRoutingMode" value="useMainModeIdentifier" />
+		<param name="inputPlansFile" value="population_10p_unrouted.xml" />
+	</module>
+	<module name="qsim" >
+		<param name="endTime" value="30:00:00" />
+		<param name="flowCapacityFactor" value="0.1" />
+		<!-- [comma-separated list] Defines which modes are congested modes. Technically, these are the modes that the departure handler of the netsimengine handles.  Effective cell size, effective lane width, flow capacity factor, and storage capacity factor need to be set with diligence.  Need to be vehicular modes to make sense. -->
+		<param name="mainMode" value="car,pedestrian,bike" />
+		<!-- Number of threads used for the QSim.  Note that this setting is independent from the "global" threads setting.  In contrast to earlier versions, the non-parallel special version is no longer there. -->
+		<param name="numberOfThreads" value="2" />
+		<param name="snapshotperiod" value="00:00:10" />
+		<param name="startTime" value="00:00:00" />
+		<param name="storageCapacityFactor" value="0.1" />
+		<!-- time in seconds.  Time after which the frontmost vehicle on a link is called `stuck' if it does not move. -->
+		<param name="stuckTime" value="3600.0" />
+		<!-- If vehicles should all be the same default vehicle, or come from the vehicles file, or something else.  Possible values:  defaultVehicle modeVehicleTypesFromVehiclesData fromVehiclesData -->
+		<param name="vehiclesSource" value="modeVehicleTypesFromVehiclesData" />
+	</module>
+	<module name="replanning" >
+		<parameterset type="strategysettings" >
+			<!-- strategyName of strategy.  Possible default names: SelectRandom BestScore KeepLastSelected ChangeExpBeta SelectExpBeta SelectPathSizeLogit      (selectors), ReRouteTimeAllocationMutatorTimeAllocationMutator_ReRouteChangeSingleTripModeChangeTripModeSubtourModeChoice (innovative strategies). -->
+			<param name="strategyName" value="ChangeExpBeta" />
+			<!-- weight of a strategy: for each agent, a strategy will be selected with a probability proportional to its weight -->
+			<param name="weight" value="0.7" />
+		</parameterset>
+		<parameterset type="strategysettings" >
+			<!-- iteration after which strategy will be disabled.  most useful for ``innovative'' strategies (new routes, new times, ...). Normally, better use fractionOfIterationsToDisableInnovation -->
+			<param name="disableAfterIteration" value="420" />
+			<param name="strategyName" value="ReRoute" />
+			<param name="weight" value="0.3" />
+		</parameterset>
+	</module>
+	<module name="routing" >
+		<!-- Some typical teleportation routing params are set by default, such as for walk and bike.  Setting this switch to "true" will clear them.  Note that this will also clear settings for helper modes such as for non_network_walk -->
+		<param name="clearDefaultTeleportedModeParams" value="true" />
+		<!-- All the modes for which the router is supposed to generate network routes (like car) -->
+		<param name="networkModes" value="car,bike,pedestrian" />
+		<parameterset type="teleportedModeParameters" >
+			<param name="mode" value="walk" />
+			<!-- Speed for a teleported mode. Travel time = (<beeline distance> * beelineDistanceFactor) / teleportedModeSpeed. Insert a line like this for every such mode. -->
+			<param name="teleportedModeSpeed" value="1.38" />
+		</parameterset>
+	</module>
+	<module name="scoring" >
+		<parameterset type="scoringParameters" >
+			<param name="lateArrival" value="-31.0" />
+			<param name="performing" value="23.29" />
+			<param name="waiting" value="-0.84" />
+			<param name="waitingPt" value="-10.0" />
+			<parameterset type="activityParams" >
+				<param name="activityType" value="dummy" />
+				<!-- typical duration of activity.  needs to be defined and non-zero.  in sec. -->
+				<param name="typicalDuration" value="02:00:00" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="car interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="pt interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="bike interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="drt interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="taxi interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="other interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="walk interaction" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="home" />
+				<param name="minimalDuration" value="01:00:00" />
+				<param name="typicalDuration" value="13:00:00" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="work" />
+				<param name="earliestEndTime" value="17:00:00" />
+				<param name="latestStartTime" value="09:00:00" />
+				<param name="minimalDuration" value="08:00:00" />
+				<param name="openingTime" value="08:00:00" />
+				<param name="typicalDuration" value="09:00:00" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="secondary" />
+				<param name="closingTime" value="20:00:00" />
+				<param name="minimalDuration" value="00:30:00" />
+				<param name="openingTime" value="08:00:00" />
+				<param name="typicalDuration" value="01:00:00" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="pedestrian interaction" />
+				<param name="scoringThisActivityAtAll" value="false" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="activityParams" >
+				<param name="activityType" value="ride interaction" />
+				<param name="scoringThisActivityAtAll" value="false" />
+				<param name="typicalDuration" value="undefined" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<param name="mode" value="ride" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<param name="mode" value="other" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<!-- [utils] alternative-specific constant.  Normally per trip, but that is probably buggy for multi-leg trips. -->
+				<param name="constant" value="-4.2" />
+				<param name="mode" value="car" />
+				<!-- [unit_of_money/m] conversion of distance into money. Normally negative. -->
+				<param name="monetaryDistanceRate" value="-2.0E-4" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<param name="constant" value="-0.0" />
+				<!-- [utils/hr] additional marginal utility of traveling.  normally negative.  this comes on top of the opportunity cost of time -->
+				<param name="marginalUtilityOfTraveling_util_hr" value="-10.0" />
+				<param name="mode" value="pt" />
+				<param name="monetaryDistanceRate" value="-1.6E-4" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<param name="marginalUtilityOfTraveling_util_hr" value="-12.0" />
+				<param name="mode" value="walk" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<param name="constant" value="-1.5" />
+				<param name="marginalUtilityOfTraveling_util_hr" value="-15.0" />
+				<param name="mode" value="bike" />
+			</parameterset>
+			<parameterset type="modeParams" >
+				<param name="marginalUtilityOfTraveling_util_hr" value="-18.77" />
+				<param name="mode" value="pedestrian" />
+			</parameterset>
+		</parameterset>
+	</module>
+	<module name="swissRailRaptor" >
+		<!-- Sets whether intermodal access and egress modes are selected by least cost (default) or randomly chosen out of the available access / egress modes. -->
+		<param name="intermodalAccessEgressModeSelection" value="CalcLeastCostModePerStop" />
+		<param name="intermodalLegOnlyHandling" value="forbid" />
+		<!-- Possible values: Default,Individual -->
+		<param name="scoringParameters" value="Default" />
+		<!-- Defines whether all potential transfers are precomputed at the beginning of the simulation (Initial) or whether they are constructed on-demand when needed (Adaptive). The former incurs potentially long up-front caclulations, but quicker routing. The latter avoids any initial computation, but may require longer routing time. Additionally, you may use Online, which will not cache adaptively calculated transfers. This will lead to largely reduced memory use, but drastically increased routing times. -->
+		<param name="transferCalculation" value="Initial" />
+		<param name="transferPenaltyBaseCost" value="0.0" />
+		<param name="transferPenaltyCostPerTravelTimeHour" value="0.0" />
+		<param name="transferPenaltyMaxCost" value="Infinity" />
+		<param name="transferPenaltyMinCost" value="-Infinity" />
+		<!-- time deducted from transfer walk leg during transfers between pt legs in order to avoid missing a vehicle by a few seconds due to delays. -->
+		<param name="transferWalkMargin" value="5.0" />
+		<!-- If true, SwissRailRaptor tries to detect when agents cannot board a vehicle in the previous iteration because it is already full and tries to find an alternative route instead. -->
+		<param name="useCapacityConstraints" value="false" />
+		<!-- Select intermodal access/egress modes from IntermodalAccessEgressParameterSets (true) or restrict access/egress modes to walk (false), i.e. disable intermodal routing. -->
+		<param name="useIntermodalAccessEgress" value="false" />
+		<param name="useModeMappingForPassengers" value="false" />
+		<param name="useRangeQuery" value="false" />
+	</module>
+	<module name="timeAllocationMutator" >
+		<!-- Default:1800.0; Defines how many seconds a time mutation can maximally shift a time. -->
+		<param name="mutationRange" value="600.0" />
+	</module>
+	<module name="transit" >
+		<!-- Input file containing the transit schedule to be simulated. -->
+		<param name="transitScheduleFile" value="schedule.xml" />
+		<!-- Set this parameter to true if transit should be simulated, false if not. -->
+		<param name="useTransit" value="true" />
+		<!-- Input file containing the vehicles used by the departures in the transit schedule. -->
+		<param name="vehiclesFile" value="transitVehicles.xml" />
+	</module>
+	<module name="transitRouter" >
+		<!-- step size to increase searchRadius if no stops are found -->
+		<param name="extensionRadius" value="500.0" />
+		<!-- maximum beeline distance between stops that agents could transfer to by walking -->
+		<param name="maxBeelineWalkConnectionDistance" value="300.0" />
+		<!-- the radius in which stop locations are searched, given a start or target coordinate -->
+		<param name="searchRadius" value="1500.0" />
+	</module>
+	<module name="vehicles" >
+		<param name="vehiclesFile" value="vehicles.xml" />
+	</module>
+
+</config>

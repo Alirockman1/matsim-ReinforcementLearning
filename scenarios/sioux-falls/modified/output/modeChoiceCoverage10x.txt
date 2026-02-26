@@ -1,0 +1,2 @@
+Iteration	bike	car	pedestrian	pt	walk
+0	0.0	0.0	0.0	0.0	0.0
