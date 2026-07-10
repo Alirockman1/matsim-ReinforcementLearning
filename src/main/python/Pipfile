@@ -1,0 +1,30 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "*"
+pydantic = "*"
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+matplotlib = "*"
+seaborn = "*"
+requests = "*"
+python-dotenv = "*"
+pyyaml = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+optuna = "*"
+tensorflow = "*"
+keras = "*"
+ipykernel = "*"
+tf2onnx = "*"
+onnx = "*"
+onnxruntime = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"

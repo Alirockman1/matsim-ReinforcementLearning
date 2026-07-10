@@ -7,17 +7,15 @@
 
 		<!-- Options: stable build based on pull requests (e.g. 16.0-PR2778), weekly (e.g. 15.0-2023w01) or official (e.g. 14.0) releases -->
 		<!--		<version>16.0-PR2509</version>-->
-		<!--<version>2025.0</version> -->
-		<version>2026.0-2025w49</version>
-
+		<version>2026.0-PR4727</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>matsim-example-project</artifactId>
+	<artifactId>a7-rl-testbed</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>MATSim example project</name>
-	<description>MATSim example project</description>
+	<name>A7 RL Testbed</name>
+	<description>A7 RL Testbed</description>
 
 	<properties>
 
@@ -26,7 +24,7 @@
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.release>21</maven.compiler.release>
+		<maven.compiler.release>25</maven.compiler.release>
 	</properties>
 
 	<repositories>
@@ -66,7 +64,7 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>5.10.2</version>
+			<version>6.0.3</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -92,11 +90,6 @@
 		</dependency>
 
 		<!--some contribs:-->
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>minibus</artifactId>
-			<version>${matsim.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>otfvis</artifactId>
@@ -151,6 +144,11 @@
 			<groupId>org.matsim.contrib</groupId>
 			<artifactId>vsp</artifactId>
 			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.onnxruntime</groupId>
+			<artifactId>onnxruntime</artifactId>
+			<version>1.17.1</version>
 		</dependency>
 <!--		<dependency>-->
 <!--			<groupId>org.matsim.contrib</groupId>-->
