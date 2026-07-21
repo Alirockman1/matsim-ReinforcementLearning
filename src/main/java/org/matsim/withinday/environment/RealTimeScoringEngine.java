@@ -18,6 +18,9 @@ import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.router.TripStructureUtils.Trip;
 import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.rl.utils.CustomConfigGroup;
+
+import com.google.inject.Inject;
+
 import org.matsim.api.core.v01.population.Activity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class RealTimeScoringEngine {
 
     Scenario localScenario;
-    Logger localLogger;
+    private static final Logger localLogger = LogManager.getLogger(RealTimeScoringEngine.class);
     private final WithinDayObserver localObserver;
 
     private final Set<String> allModesUsedToday = new HashSet<>();
@@ -41,9 +44,9 @@ public class RealTimeScoringEngine {
     private double currentStepAbandonedModePenalty;
     private double currentStepReward;
 
-    public RealTimeScoringEngine(Scenario scenario, Logger log, WithinDayObserver observer){
+    @Inject
+    public RealTimeScoringEngine(Scenario scenario, WithinDayObserver observer){
         this.localScenario = scenario;
-        this.localLogger = log;
         this.localObserver = observer;
     }
 

@@ -187,7 +187,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             // Find the network centeroid
             StateEngine.setNetworkCentroid(scenario.getNetwork());
 
-            //  Initialize the encoder model
+            /*//  Initialize the encoder model
             URL context = config.getContext(); 
             String encoderModelPath = customConfigGroup.getEncoderModel();
             URL absoluteModelUrl = ConfigGroup.getInputFileURL(context, encoderModelPath);
@@ -198,7 +198,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             } catch (URISyntaxException e) {
                 log.error("Failed to convert model URL to a valid URI path: " + e.getMessage(), e);
                 finalModelPath = encoderModelPath;
-            }
+            }*/
         }
     }
 
@@ -315,6 +315,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
         // Get observation of the state
 		Map<String, Object> state = this.customRLObserver.observeState(agent, sim, nextTripLeg, simulationTime, false);
+        System.out.println("The state at activity end event is:" + state);
         state.put("simulationIteration", StateEngine.currentIteration);
 
         // Individual subpopulation
@@ -325,6 +326,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         log.info("COMMUNICATION NET: Environment recorded for agent (" + agentId.toString() + ")");
         String jsonState = gson.toJson(state);
         String newMode = pythonCommunicationManager.httpPost(jsonState, "get-action", 360);
+        System.out.println("The mode assigned by the backend algorithm is: " + newMode);
         
         if (newMode == null){
             // Set default mode incase communication breaks down

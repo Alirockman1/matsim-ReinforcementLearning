@@ -20,14 +20,12 @@ import org.matsim.rl.utils.CustomConfigGroup;
  */
 public abstract class WithinDayObserver {
 
-    protected final RealTimeScoringEngine realTimeScoringEngine;
     public final Map<Id<Person>, RealTimeScoringEngine> agentRewardCalculators = new HashMap<>();
     private final Map<Id<Person>, Map<String, Object>> agentDemographicRegistry = new HashMap<>();
     protected final Logger log;
     protected final Scenario scenario;
 
-    public WithinDayObserver(RealTimeScoringEngine realTimeScoringEngine, Scenario scenario, Logger log) {
-        this.realTimeScoringEngine = realTimeScoringEngine;
+    public WithinDayObserver(Scenario scenario, Logger log) {
         this.log = log;
         this.scenario = scenario;
     }
@@ -97,7 +95,7 @@ public abstract class WithinDayObserver {
                                 String executedMode, Trip trip, double assetRetrievalTime, 
                                 int transferCount, Map<String, Integer> discontinuityPenalties) {
         
-        RealTimeScoringEngine rewardCalculator = agentRewardCalculators.computeIfAbsent(agent.getId(), id -> new RealTimeScoringEngine(this.scenario, this.log, this));
+        RealTimeScoringEngine rewardCalculator = agentRewardCalculators.computeIfAbsent(agent.getId(), id -> new RealTimeScoringEngine(this.scenario, this));
 
         rewardCalculator.compute(agent, currentTime, activity, executedMode, trip, 
             assetRetrievalTime, transferCount, discontinuityPenalties);

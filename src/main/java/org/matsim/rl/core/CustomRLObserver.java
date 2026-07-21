@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Activity;
@@ -21,7 +22,6 @@ import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.TripStructureUtils.Trip;
 import org.matsim.rl.utils.CustomConfigGroup;
-import org.matsim.withinday.environment.RealTimeScoringEngine;
 import org.matsim.withinday.environment.StateEngine;
 import org.matsim.withinday.environment.StateEngine.GridPosition;
 import org.matsim.withinday.environment.WithinDayObserver;
@@ -29,6 +29,7 @@ import org.matsim.withinday.environment.WithinDayObserver;
 import com.google.inject.Inject;
 
 public class CustomRLObserver extends WithinDayObserver {
+    private static final Logger log = LogManager.getLogger(CustomRLObserver.class);
     private static final NavigableMap<Double, Integer> CUSTOM_TIME_BIN_LOOKUP = new TreeMap<>();
     private final Config config;
     private final String[] tourBasedModes;
@@ -51,8 +52,8 @@ public class CustomRLObserver extends WithinDayObserver {
     @Inject private CustomConfigGroup customConfigGroup;
     
     @Inject
-    public CustomRLObserver(RealTimeScoringEngine realTimeScoringEngine, Scenario scenario, Logger log) {
-        super(realTimeScoringEngine, scenario, log);
+    public CustomRLObserver(Scenario scenario) {
+        super(scenario, log);
         this.config = scenario.getConfig();
         this.tourBasedModes = config.getModules().get("agentModeChoice").getParams().get("tourBasedModes").split("\\s*,\\s*"); 
 
@@ -116,7 +117,9 @@ public class CustomRLObserver extends WithinDayObserver {
             stateBuffer.put((int) rawStateSpace.get("scheduledActivityFlexibility"));
             stateBuffer.put(assetBits);
 
-            rawBitStateSpace = stateBuffer.array();
+            rawBitStateSpace = new int[totalLength];
+            stateBuffer.flip();
+            stateBuffer.get(rawBitStateSpace);
 
             // Compressed Latent bit state
 
@@ -136,13 +139,15 @@ public class CustomRLObserver extends WithinDayObserver {
             stateBuffer.put(currentPositionBits);
             stateBuffer.put(assetBits);
 
-            rawBitStateSpace = stateBuffer.array();
+            rawBitStateSpace = new int[totalLength];
+            stateBuffer.flip();
+            stateBuffer.get(rawBitStateSpace);
 
         }
 
         observation.put("endOfDayFlag", isEndOfDay);
         observation.put("agentID", agent.getId().toString());
-        observation.put("rawBitState", rawBitStateSpace);
+        observation.put("rawBitStateRepresentation", rawBitStateSpace);
         observation.put("possibleModeSet", availableModes);
         observation.put("rawStateObservation", rawStateSpace);
         

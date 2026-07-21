@@ -21,6 +21,7 @@ import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.rl.core.CustomRLObserver;
+import org.matsim.withinday.environment.RealTimeScoringEngine;
 import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.trafficmonitoring.WithinDayTravelTime;
@@ -82,12 +83,12 @@ public class RunExternalModeChoice {
         config.controller().setDumpDataAtEnd(false);
 
         Scenario scenario = ScenarioUtils.loadScenario(config);
-
         Controller controller = ControllerUtils.createController(scenario);
 
         // Dont we need to have all modes in the simulation to simulate real time congestion?? - ALI
         //final WithinDayTravelTime travelTime = new WithinDayTravelTime(controller.getScenario(), Set.of(REINFORCEMENT_MODE));
         final WithinDayTravelTime travelTime = new WithinDayTravelTime(controller.getScenario(), Set.of(REINFORCEMENT_MODE, TransportMode.car));
+
         controller.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
@@ -97,7 +98,7 @@ public class RunExternalModeChoice {
                 this.addControllerListenerBinding().to(CommunicationManager.class);
 
                 // bind the custom observer class
-                bind(WithinDayObserver.class).to(CustomRLObserver.class).asEagerSingleton();
+                this.bind(WithinDayObserver.class).to(CustomRLObserver.class).asEagerSingleton();
 
                 // bind the withinday travel time in order to be able to use it in the mode choice listener
                 this.bind(TravelTime.class).toInstance(travelTime);

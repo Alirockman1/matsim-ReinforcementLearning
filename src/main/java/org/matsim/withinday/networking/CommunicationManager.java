@@ -81,11 +81,11 @@ public class CommunicationManager implements StartupListener, ShutdownListener {
     private void launchPythonService() {
         try {
             String projectRoot = System.getProperty("user.dir");
-            File serverPath = new File(projectRoot, "src/main/python/networking");
+            File serverPath = new File(projectRoot, "src/main/python/withinday/networking");
 
             ProcessBuilder pb = new ProcessBuilder(
                 "python3", "-m", "uvicorn", 
-                "Service_ReinforcementLearning:app", 
+                "main:app", 
                 "--host", this.host, 
                 "--port", String.valueOf(this.port),
                 "--log-level", "warning",
