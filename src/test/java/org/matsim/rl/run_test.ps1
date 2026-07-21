@@ -14,7 +14,11 @@ $UPDATE_JAR = $true
 $REBUILT_DOCKER = $true
 
 # Base Windows workspace directory 
-$BASE_WORKSPACE = "C:\ResearchWork\Matsim_integration\HPC\RL_Mode_Choice\decenteralize_training"
+$BASE_WORKSPACE = "C:\ResearchWork\Matsim_integration\Local\matsim-withinday-python"
+
+# Ensure Docker service is running inside WSL silently as root
+Write-Host "Ensuring Docker daemon is active in WSL..." -ForegroundColor Yellow
+wsl -u root service docker start | Out-Null
 
 # Define your input/output directories dynamically
 $SCENARIO_INPUT_DIR = "$BASE_WORKSPACE\scenarios\$SCENARIO_NAME\input"
@@ -68,27 +72,37 @@ if ($UPDATE_JAR){
     mvn clean install -DskipTests
 }
 
-# 5. Remove old Docker image & build fresh Docker image
+# 5. Convert Windows paths to linux path for wsl container mapping compatibility
+$DOCKER_WORKSPACE = $BASE_WORKSPACE -replace '\\', '/' 
+$DOCKER_INPUT = $SCENARIO_INPUT_DIR -replace '\\', '/'
+$DOCKER_OUTPUT = $SCENARIO_OUTPUT_DIR -replace '\\', '/'
+$DOCKER_SHARED = $SHARED_STORAGE_DIR -replace '\\', '/'
+
+$WSL_WORKSPACE = (wsl wslpath -a -u "$DOCKER_WORKSPACE").Trim()
+$WSL_INPUT     = (wsl wslpath -a -u "$DOCKER_INPUT").Trim()
+$WSL_OUTPUT    = (wsl wslpath -a -u "$DOCKER_OUTPUT").Trim()
+$WSL_SHARED    = (wsl wslpath -a -u "$DOCKER_SHARED").Trim()
+
+# 6. Remove old Docker image & build fresh Docker image
 if($REBUILT_DOCKER){
     # Create a dynamic tag name based on the current objective
     $IMAGE_TAG = "matsim-rl:$OBJECTIVE"
 
     Write-Host "Removing old Docker image [$IMAGE_TAG]..." -ForegroundColor Yellow
-    docker rmi $IMAGE_TAG -f 2>$null
+    wsl docker rmi $IMAGE_TAG -f 2>$null
 
     Write-Host "Building new Docker image [$IMAGE_TAG] using Dockerfile_compressed.txt..." -ForegroundColor Yellow
     # 🌟 -f points to your custom layer file, and -t applies the dynamic tag
-    docker build -f Dockerfile_compressed.txt -t $IMAGE_TAG .
+    wsl docker build -f "$WSL_WORKSPACE/Dockerfile_compressed.txt" -t $IMAGE_TAG $WSL_WORKSPACE
+    #docker build -f .\Dockerfile -t $IMAGE_TAG .
 }
 
 # 6. Convert Windows paths to forward slashes for Docker container mapping compatibility
-$DOCKER_INPUT = $SCENARIO_INPUT_DIR -replace '\\', '/'
-$DOCKER_OUTPUT = $SCENARIO_OUTPUT_DIR -replace '\\', '/'
-$DOCKER_SHARED = $SHARED_STORAGE_DIR -replace '\\', '/'
+
 
 # 7. Execute Docker Run Container with Complete Environment Matrix
 Write-Host "Launching containerized simulation environment..." -ForegroundColor Green
-docker run --rm -it `
+wsl docker run --rm -it `
     -e OBJECTIVE="$OBJECTIVE" `
     -e MATSIM_OUTPUT_BASE="/app/scenarios/${SCENARIO_NAME}/output" `
     -e MATSIM_ITERATION="$MATSIM_ITERATION" `
@@ -97,9 +111,9 @@ docker run --rm -it `
     -e JAVA_HEAP="$MEMORY" `
     -e PARAMS="$PARAMS" `
     -e SCENARIO="$SCENARIO_NAME" `
-    -v "${DOCKER_INPUT}:/app/scenarios/${SCENARIO_NAME}/input" `
-    -v "${DOCKER_OUTPUT}:/app/scenarios/${SCENARIO_NAME}/output" `
-    -v "${DOCKER_SHARED}:/app/shared_storage" `
+    -v "${WSL_INPUT}:/app/scenarios/${SCENARIO_NAME}/input" `
+    -v "${WSL_OUTPUT}:/app/scenarios/${SCENARIO_NAME}/output" `
+    -v "${WSL_SHARED}:/app/shared_storage" `
     $IMAGE_TAG
 
 Write-Host "=========================================" -ForegroundColor Cyan

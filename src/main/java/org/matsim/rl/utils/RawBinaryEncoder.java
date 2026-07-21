@@ -2,6 +2,8 @@ package org.matsim.rl.utils;
 
 import java.util.Map;
 
+import org.matsim.rl.environment.StateEngine;
+
 public class RawBinaryEncoder {
     private final double xCurrent, yCurrent, xNext, yNext;
     private final double[] environmentMap;
@@ -24,8 +26,8 @@ public class RawBinaryEncoder {
     public String transform(int gridSize){
         // Calculate how many bits are required for each attribute dynamically
         int locationBitLength = (gridSize * gridSize);
-        int timeBitLength = getRequiredBitCount(StateUtils.getTimeBinSize() - 1);
-        int assetBitLength = getRequiredBitCount(StateUtils.getAssetBinSize() - 1);
+        int timeBitLength = getRequiredBitCount(StateEngine.getTimeBinSize("demand_based") - 1);
+        int assetBitLength = getRequiredBitCount(StateEngine.getAssetBinSize() - 1);
 
         // Transform integer values into binary bit strings with fixed padding sizes
         String departureBitString = getGridBinaryString(this.xCurrent, this.yCurrent, gridSize);

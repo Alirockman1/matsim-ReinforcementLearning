@@ -288,25 +288,12 @@
 		<param name="travelTimeBinSize" value="900" /> 
 	</module>
 
-	<module name="agentModeChoice">
-		<param name="modelType" value="QLearning" />
-		<param name="autoEncoderModel" value="matsim_encoder_dim8.onnx" />
-		<param name="modelFileName" value="siouxfalls_v1.pkl" />
-		<param name="saveInterval" value="10" /> 
-		<param name="trainingCutoffIteration" value="800" /> 
-		<param name="alpha" value="0.1" />
-		<param name="gamma" value="0.9" />
-		<param name="epsilon" value="0.9" />
-		<param name="epsilonMinimum" value="0.05" />
-		<param name="epsilonDecay" value="0.9995" />
-		<param name="discontinuityPenalty" value="1.0" />
-    	<param name="retrievalCostPenalty" value="1.0" />
-
-		<!--<param name="agentFilterList" value="10048_4, 10047_1, 10015_2, 10132_5" />-->
-		<param name="allowAllAgents" value="false" />
-		<param name="agentFilterList" value="10047_1" />
-		<param name="modes" value="car,pt,bike,pedestrian" />
-		<param name="tourBasedModes" value="car,bike" />
-	</module>
+    <module name="agentModeChoice">
+        <param name="modelFileName" value="modeChoiceModel.xml" />
+        <param name="allowAllAgents" value="false" />
+        <param name="agentFilterList" value="10047_1" />
+        <param name="modes" value="car,pt,bike,pedestrian" />
+        <param name="tourBasedModes" value="car,bike" />
+    </module>
 
 </config>

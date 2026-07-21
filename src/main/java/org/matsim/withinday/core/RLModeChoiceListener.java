@@ -1,4 +1,4 @@
-package org.matsim.rl.core;
+package org.matsim.withinday.core;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -45,8 +45,17 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.core.utils.misc.Time;
-
+import org.matsim.withinday.environment.AgentAssetInventory;
+import org.matsim.withinday.environment.RealTimeScoringEngine;
+import org.matsim.withinday.environment.StateEngine;
+import org.matsim.withinday.environment.WithinDayObserver;
+import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.utils.EditTrips;
+import org.matsim.withinday.utils.IterationEndReportingUtils;
+
+import org.matsim.rl.utils.CustomConfigGroup;
+
+import static org.matsim.withinday.core.RunExternalModeChoice.REINFORCEMENT_MODE;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -58,17 +67,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-// Custom classes
-import static org.matsim.rl.core.RunExternalModeChoice.REINFORCEMENT_MODE;
-
-import org.matsim.rl.environment.AgentAssetInventory;
-import org.matsim.rl.environment.RealTimeScoringEngine;
-import org.matsim.rl.environment.StateEngine;
-import org.matsim.rl.networking.CommunicationManager;
-import org.matsim.rl.utils.IterationEndReportingUtils;
-import org.matsim.rl.utils.RLConfigGroup;
-import org.matsim.rl.utils.RawBinaryEncoder;
 
 public class RLModeChoiceListener implements StartupListener, IterationStartsListener, IterationEndsListener, MobsimBeforeSimStepListener, MobsimAfterSimStepListener, ActivityStartEventHandler {
     private static final Logger log = LogManager.getLogger(RLModeChoiceListener.class);
@@ -92,6 +90,13 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
     @Inject
     CommunicationManager pythonCommunicationManager;
 
+    @Inject
+    WithinDayObserver customRLObserver;
+
+    @Inject
+    CustomConfigGroup customConfigGroup;
+
+    private AgentSelector agentSelector;
     private EditTrips editTrips;
     private Gson gson = new Gson();
 
@@ -108,37 +113,39 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
     @Override
     public void notifyStartup(StartupEvent event) {
 
+        this.agentSelector = new AgentSelector(scenario, 42L, log);
+
         Config config = scenario.getConfig();
-        RLConfigGroup rlConfig = ConfigUtils.addOrGetModule(config, RLConfigGroup.class);
         ScoringConfigGroup scoring = config.scoring();
 
-        if (rlConfig != null) {
+        // Move these to CustomRLReplanner.initiate()
+        if (this.customConfigGroup != null) {
             Map<String, Object> jsonMap = new HashMap<>();
 
             // RL Nodel
-            jsonMap.put("modelType", rlConfig.getModelType());
+            jsonMap.put("modelType", customConfigGroup.getModelType());
 
             // RL Hyperparameters
-            jsonMap.put("alpha", rlConfig.getAlpha());
-            jsonMap.put("gamma", rlConfig.getGamma());
-            jsonMap.put("epsilon", rlConfig.getEpsilon());
-            jsonMap.put("epsilonDecay", rlConfig.getEpsilonDecay());
-            jsonMap.put("epsilonMinimum", rlConfig.getEpsilonMinimum());
-            jsonMap.put("trainingCutoffIteration", rlConfig.getTrainingCutoffIteration());
+            jsonMap.put("alpha", customConfigGroup.getAlpha());
+            jsonMap.put("gamma", customConfigGroup.getGamma());
+            jsonMap.put("epsilon", customConfigGroup.getEpsilon());
+            jsonMap.put("epsilonDecay", customConfigGroup.getEpsilonDecay());
+            jsonMap.put("epsilonMinimum", customConfigGroup.getEpsilonMinimum());
+            jsonMap.put("trainingCutoffIteration", customConfigGroup.getTrainingCutoffIteration());
 
             // System Metadata
             String outputDirectory = scenario.getConfig().controller().getOutputDirectory();
-            String absoluteOutputDirectory = new java.io.File(outputDirectory).getAbsolutePath();
+            String absoluteOutputDirectory = new File(outputDirectory).getAbsolutePath();
             jsonMap.put("outputDirectory", absoluteOutputDirectory);
             
-            File fullPath = new File(absoluteOutputDirectory, rlConfig.getModelFileName());
+            File fullPath = new File(absoluteOutputDirectory, customConfigGroup.getModelFileName());
             
-            jsonMap.put("saveInterval", rlConfig.getSaveInterval());
+            jsonMap.put("saveInterval", customConfigGroup.getSaveInterval());
             jsonMap.put("modelFileName", fullPath.getAbsolutePath());
 
             // RL Mode Choice
-            jsonMap.put("modes", rlConfig.getModes());
-            jsonMap.put("tourBasedModes", rlConfig.getTourBasedModes());
+            jsonMap.put("modes", customConfigGroup.getModes());
+            jsonMap.put("tourBasedModes", customConfigGroup.getTourBasedModes());
 
             // Global Scoring Parameters for subpopulation (The Core of Nagel Scoring)
             Map<String, Object> scoringParameterAllPopulation = new HashMap<>();
@@ -180,9 +187,9 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             // Find the network centeroid
             StateEngine.setNetworkCentroid(scenario.getNetwork());
 
-            /*//  Initialize the pre-trained encoder model
+            //  Initialize the encoder model
             URL context = config.getContext(); 
-            String encoderModelPath = rlConfig.getEncoderModel();
+            String encoderModelPath = customConfigGroup.getEncoderModel();
             URL absoluteModelUrl = ConfigGroup.getInputFileURL(context, encoderModelPath);
 
             String finalModelPath;
@@ -191,7 +198,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             } catch (URISyntaxException e) {
                 log.error("Failed to convert model URL to a valid URI path: " + e.getMessage(), e);
                 finalModelPath = encoderModelPath;
-            }*/
+            }
         }
     }
 
@@ -207,8 +214,22 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         this.agentExperiencedModes.clear();
         this.agentAccumulatedDeltaQ.clear();
 
-        log.info("Initializing Mode Location Tagging for all RL agents at start of iteration {}", event.getIteration());
+        // Sample agents from the population
+        double samplingPercentage = this.customConfigGroup.getSamplingPercentage();
 
+        Collection<String> fixedAgentIds = new ArrayList<>();
+        if (this.customConfigGroup!= null && this.customConfigGroup.getAgentFilterList() != null) {
+            fixedAgentIds = Arrays.asList(this.customConfigGroup.getAgentFilterList().split("\\s*,\\s*"));
+        }
+
+        this.agentSelector.sampleAgentsForIteration(event.getIteration(), samplingPercentage, fixedAgentIds);
+        
+        // Initialize the tour based modes
+        String[] tourBasedModes = scenario.getConfig().getModules().get("agentModeChoice").getParams().get("tourBasedModes").split("\\s*,\\s*");
+        StateEngine.setModeAvailabilityLookup(tourBasedModes);
+
+        // Start tagging each agents mode geo location [CHANGE TO ONLY THE FILTED AGENTS]
+        log.info("Initializing Mode Location Tagging for all RL agents at start of iteration {}", event.getIteration());
         AgentAssetInventory.initializeModeLocationTagging(this.scenario, this.log);
     }
 
@@ -271,9 +292,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
     private void replanNextTrip(MobsimAgent agent, QSim sim, double simulationTime) {
 
         // Check if an RL agent is selected
-        if (!isAgentForReplanning(agent)){
-            return;
-        }
+        if (!this.agentSelector.contains(agent.getId())) return;
 
         if (!(WithinDayAgentUtils.getCurrentPlanElement(agent) instanceof Activity)) {
             throw new RuntimeException("For replanning the next trip, we expect the current plan element to be an activity, but it is not. Agent: " + agent.getId());
@@ -295,20 +314,15 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
     	Id<Person> agentId = agent.getId();       
 
         // Get observation of the state
-		Map<String, Object> state = agentObservation(agent, nextTripLeg, sim, simulationTime);
+		Map<String, Object> state = this.customRLObserver.observeState(agent, sim, nextTripLeg, simulationTime, false);
         state.put("simulationIteration", StateEngine.currentIteration);
 
         // Individual subpopulation
-        String agentSubpopulation = (String) scenario.getPopulation().getPersons().get(agentId).getAttributes().getAttribute("subpopulation");
+        Map<String, Object> demographics = this.customRLObserver.getAgentDemographicRecord(agent);
+        state.put("subpopulation", demographics.getOrDefault("subpopulation", "default"));
 
-        if (agentSubpopulation == null){
-            agentSubpopulation = "null";
-        }
-        state.put("subpopulation", agentSubpopulation);
-
+        // Transfer package
         log.info("COMMUNICATION NET: Environment recorded for agent (" + agentId.toString() + ")");
-
-        // POST REQUEST: Send observation through the communication net
         String jsonState = gson.toJson(state);
         String newMode = pythonCommunicationManager.httpPost(jsonState, "get-action", 360);
         
@@ -320,70 +334,28 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
         log.info("RL MODE CHOICE: " + newMode.toUpperCase() + " is asssigned for the agent (" + agentId.toString() + ")");
 
+        // SHIFT TO THE PLANNER
         this.agentExperiencedModes.computeIfAbsent(agentId, id -> new ArrayList<>()).add(newMode);
             
         // Route next trip
         List<? extends PlanElement> newNextTrip = editTrips.replanFutureTrip(oldNextTrip, WithinDayAgentUtils.getModifiablePlan(agent), newMode, agent.getActivityEndTime());
 
-        if (!sim.getScenario().getConfig().qsim().getMainModes().contains(newMode)) {
-            // the new mode is not a main mode, so we don't need to add a vehicle to the simulation.
-            return;
-        }
+        // the new mode is not a main mode, so we don't need to add a vehicle to the simulation.
+        if (!sim.getScenario().getConfig().qsim().getMainModes().contains(newMode)) return;
 
         WithinDayAgentUtils.addVehicleToQSimIfNecessary(newNextTrip, scenario, sim);
     }
 
-    private Map<String, Object> agentObservation(MobsimAgent agent, Trip nextTrip, QSim sim, double departureTimeSeconds){
-
-        String agentIdString = agent.getId().toString();
-
-        // Get the raw state parameters from the live environment
-        Map<String, Object> rawStateSpaceMap = StateEngine.getRawState(agent, nextTrip, departureTimeSeconds);
-
-        // Discretize the raw state
-        Map<String, Object> discreteStateSpaceMap = StateEngine.discretizeRawState(rawStateSpaceMap, 8, "demand_based");
-
-        // Convert to raw binary encoded state representation (Optional)
-        String rawBinaryEncodedString = StateEngine.convertToBitStateRepresentation(rawStateSpaceMap, 8, "demand_based");
-
-        //--- Auto Encoded States ---//
-        String encodedLatentSpace = rawBinaryEncodedString;  
-
-        // Mode set for the agent
-        List<String> availableModes= new ArrayList<>(scenario.getConfig().scoring().getAllModes());
-
-        availableModes.removeIf(mode -> 
-            mode.equalsIgnoreCase("ride") || 
-            mode.equalsIgnoreCase("other") || 
-            mode.equalsIgnoreCase("rl") ||
-            mode.equalsIgnoreCase("walk")
-        );
-
-        Map<String, Object> observation = new HashMap<>();
-        observation.put("agentID", agentIdString);
-        observation.put("encodedStateString", rawBinaryEncodedString);
-        observation.put("encodedLatentSpace", encodedLatentSpace);
-        observation.put("possibleModeSet", availableModes);
-        observation.put("rawStateObservation", rawStateSpaceMap);
-
-        return observation;
-    }
-
-    private void computeRewardAndNextState(MobsimAgent agent, double currentTime, QSim sim){
+    private void computeRewardAndNextState(MobsimAgent agent, double simulationTime, QSim sim){
         
         // Check if an RL agent is selected
-        if (!isAgentForReplanning(agent)){
-            return;
-        }
-
-        RealTimeScoringEngine rewardCalculator = agentRewardCalculators.computeIfAbsent(agent.getId(), id -> new RealTimeScoringEngine(this.scenario, this.log));
+        if (!this.agentSelector.contains(agent.getId())) return;
 
         // Get the agent which reached the activity destination
         Id<Person> agentId = agent.getId();
 
         // The live plan and corresponding trips
         Plan executedPlan = WithinDayAgentUtils.getModifiablePlan(agent);
-
         List<Trip> trips = TripStructureUtils.getTrips(executedPlan);
 
         Trip completedTrip = null;
@@ -402,7 +374,6 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         double totalTripTravelTime = 0;
         int mainModeLegCount = 0;
         String currentModeUsed = "unknown";
-
         Activity previousActivity = completedTrip.getOriginActivity();;       
             
         // Trip matrics (Penalty for traveling)
@@ -412,7 +383,6 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             totalTripDistance += leg.getRoute().getDistance();
             totalTripTravelTime += leg.getTravelTime().orElse(0.0);
             
-            // Identify the main mode (ignoring the 'walk' legs usually used for access)
             if (!leg.getMode().contains("walk")) {
                 mainModeLegCount++;
                 currentModeUsed = leg.getMode();
@@ -423,11 +393,10 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
         // Spatial penalty (check if mode is available at location)
         Id<Link> previousLinkId = previousActivity.getLinkId();
-        
         Map<String, Integer> modeDiscontinuityPenaltyMap = AgentAssetInventory.getModeDiscontinuityPenalty(agentId, previousLinkId);
 
         //Map<String, Id<Link>> previousInventorySnapshot = new HashMap<>(ModeUtils.getModeLocation(agentId));
-        //System.out.println("The previous mode location at " + previousLinkId.toString() + " is: " + ModeUtils.getModeLocation(agentId));
+        System.out.println("The previous mode location at " + previousLinkId.toString() + " is: " + AgentAssetInventory.getModeLocation(agentId));
 
         // --- UPDATING INVENTORY FOR New Location ---
         // Get all modes (including tour based modes - i.e resources)
@@ -437,7 +406,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
         AgentAssetInventory.updateModeLocation(agentId, currentLinkId, previousLinkId, currentModeUsed, allModes, tourBasedModes, modeDiscontinuityPenaltyMap);
 
-        //System.out.println("The current mode location at " + currentLinkId.toString() + " is: " + ModeUtils.getModeLocation(agentId));
+        System.out.println("The current mode location at " + currentLinkId.toString() + " is: " + AgentAssetInventory.getModeLocation(agentId));
 
         // --- COMPUTE STEP-WISE REWARD ---
         int currentTripIndex = trips.indexOf(completedTrip);
@@ -448,38 +417,18 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             modeRetrievalTime = AgentAssetInventory.getModeRetrievalTimes(agent, this.scenario, currentTripIndex, tourBasedModes, this.log);
         }
 
-        rewardCalculator.compute(agent, currentTime, previousActivity, currentModeUsed, completedTrip, modeRetrievalTime, numberOfTransfers, modeDiscontinuityPenaltyMap);
+        RealTimeScoringEngine rewardCalculator = this.customRLObserver.tripEvaluationMetrics(
+            agent, simulationTime, previousActivity, currentModeUsed, completedTrip, modeRetrievalTime, numberOfTransfers, modeDiscontinuityPenaltyMap
+        );
+
         double currentStepMatsimScore = rewardCalculator.getCurrentStepTripScore();
         double currentStepReward = rewardCalculator.getCurrentStepReward();
 
         // --- NEXT STATE DATA ---
-        Map<String, Object> nextRawObservation;
-        String nextBitString;
-        List<String> nextEncodedLatentSpace;
+        Map<String, Object> nextState = this.customRLObserver.observeState(agent, sim, completedTrip, simulationTime, true);
 
-        Map<String, Object> nextState = new HashMap<>();
-
-        if (currentTripIndex < trips.size() - 1) {
-            Trip nextTripLeg = trips.get(currentTripIndex + 1);
-
-            double nextDepartureTimeSeconds = StateEngine.getPredictedDepartureTime(completedTrip.getDestinationActivity(), currentTime).seconds();
-
-            nextState = agentObservation(agent, nextTripLeg, sim, nextDepartureTimeSeconds);
-            nextState.put("isTerminal", false);
-
-            nextRawObservation = (Map<String, Object>) nextState.get("rawStateObservation");
-            nextBitString = (String) nextState.get("encodedStateString");
-            nextEncodedLatentSpace = (List<String>) nextState.get("encodedLatentSpace");
-
-        }else{
-            nextState.put("isTerminal", true);
-
-            nextRawObservation = new HashMap<>();
-            nextBitString = "TERMINAL";
-            nextEncodedLatentSpace = new ArrayList<>();
-
+        if ((boolean) nextState.get("endOfDayFlag")){
             rewardCalculator.computeDayEndScore(agent, trips, completedTrip.getDestinationActivity());
-
             log.info("The end of the day score for " + agentId.toString() + " is: " + rewardCalculator.getAccumulatedDayScore());
         }
 
@@ -493,13 +442,11 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         jsonMap.put("matsimScore", currentStepMatsimScore);
 
         // NEXT STATE MAP
-        jsonMap.put("terminal",nextState.get("isTerminal"));
-        jsonMap.put("nextEncodedStateString", nextBitString);
-        jsonMap.put("nextRawStateObservation", nextRawObservation);
-        jsonMap.put("nextEncodedLatentSpace", nextEncodedLatentSpace);
+        jsonMap.put("isTerminal", (boolean) nextState.get("endOfDayFlag"));
+        jsonMap.put("nextRawBitStateRepresentation", nextState.get("rawBitState"));
+        //jsonMap.put("nextEncodedLatentSpace", nextEncodedLatentSpace);
 
-        if ((boolean) nextState.get("isTerminal")){
-
+        if ((boolean) nextState.get("endOfDayFlag")){
             jsonMap.put("accumulativeScore", rewardCalculator.getAccumulatedDayScore());
             jsonMap.put("accumulativeReward", rewardCalculator.getAccumulatedDayReward());
         }
@@ -507,7 +454,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         // Step info
         String jsonStep = new Gson().toJson(jsonMap);
 
-        //log.info("COMMUNICATION NET: Sending Reward to Python: " + jsonStep);
+        log.info("COMMUNICATION NET: Sending Reward to Python: " + jsonStep);
 
         // SEND DATA TO PYTHON //
         String stepResponse = pythonCommunicationManager.httpPost(jsonStep, "send-reward", 360);
@@ -527,46 +474,6 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
                 log.error("Failed to parse delta_q metrics response for agent " + agentId + ": " + ex.getMessage());
             }
         }
-    }
-
-    // Method to check if the agent should be up for replanning
-    private boolean isAgentForReplanning(MobsimAgent agent){
-
-        // Check if the agent is already stored in the list
-        if (this.activeRLAgents.contains(agent.getId())) {
-            return true;
-        }
-
-        // Check if the new agent should be part of the filter list
-        // Exclude PT driver or system agent.
-        Person person = this.scenario.getPopulation().getPersons().get(agent.getId());
-        if (person == null) return false;
-
-        Integer currentPlanElementIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(agent);
-        Plan plan = WithinDayAgentUtils.getModifiablePlan(agent);
-        Integer maxPlanElementIndex =plan.getPlanElements().size();
-        
-        if (currentPlanElementIndex == null || currentPlanElementIndex >=  maxPlanElementIndex - 1) {
-            return false;
-        }
-
-        try {
-            TripStructureUtils.Trip nextTrip = EditTrips.findTripAtPlanElementIndex(agent, currentPlanElementIndex + 1);
-
-            if (nextTrip != null) {
-                String mode = TripStructureUtils.identifyMainMode(nextTrip.getTripElements());
-                if (REINFORCEMENT_MODE.equals(mode)) {
-                    if (!this.activeRLAgents.contains(agent.getId())) {
-                        this.activeRLAgents.add(agent.getId());
-                        return true;
-                    }
-                }
-            }
-        } catch (IndexOutOfBoundsException e) {
-            return false;
-        }
-
-        return false;
     }
     
     // Method to adjust the activity end time if needed.

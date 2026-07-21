@@ -1,1 +1,11 @@
-Dockerfile*
+# Folders (ignored everywhere in the project)
+target/
+output/
+bin/
+test/output/
+
+# Package files
+Dockerfile
+*.jar
+*.war
+*.ear

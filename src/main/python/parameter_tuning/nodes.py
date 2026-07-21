@@ -38,7 +38,7 @@ class WorkerNode:
             f"-Xmx{self._java_heap}",
             "-Djava.awt.headless=true",
             "-cp", "/app/simulation.jar",
-            "org.matsim.rl.RunExternalModeChoice",
+            "org.matsim.rl.core.RunExternalModeChoice",
             f"{self._config_path}",
             f"--config:controller.outputDirectory={self._output_dir}",
             f"--config:controller.lastIteration={self._iteration}",

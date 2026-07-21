@@ -1,0 +1,396 @@
+2026-07-21T10:10:48,677  INFO Gbl:64 JVM: 25.0.3; Oracle Corporation; mixed mode, sharing; 64-bit
+2026-07-21T10:10:48,680  INFO Gbl:68 OS: Linux; 6.18.33.2-microsoft-standard-WSL2; amd64
+2026-07-21T10:10:48,682  INFO Gbl:71 CPU cores: 16
+2026-07-21T10:10:48,687  INFO Gbl:72 max. Memory: 12288.0MB (12884901888B)
+2026-07-21T10:10:48,689  INFO Gbl:114 MATSim-Build: r2819496b6da557dcb701140e8de74ecb15775887 ({2026-03-05 10:53:28})
+2026-07-21T10:10:48,692  INFO Gbl:76 Command: org.matsim.rl.core.RunExternalModeChoice /app/scenarios/sioux-falls/input/config.xml --config:controller.outputDirectory=/app/scenarios/sioux-falls/output --config:controller.lastIteration=6 --config:global.numberOfThreads=4 --config:agentModeChoice.trainingCutoffIteration=5 --config:agentModeChoice.alpha=0.367435 --config:agentModeChoice.gamma=0.892101 --config:agentModeChoice.epsilonDecay=0.966574 --config:agentModeChoice.epsilonMinimum=0.001044 --config:agentModeChoice.discontinuityPenalty=2.59894 --config:agentModeChoice.retrievalCostPenalty=3.405791
+2026-07-21T10:10:48,705  INFO MemoryObserver:43 used RAM: 74 MB  free: 141 MB  total: 216 MB  max: 12288 MB
+2026-07-21T10:10:48,707  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.rl.networking.CommunicationManager with priority 100.0
+2026-07-21T10:10:48,709  INFO CommunicationManager:65 COMMUNICATION NET: Starting Python Service...
+2026-07-21T10:10:49,720  INFO CommunicationManager:122 Waiting for Python Service... 1s
+2026-07-21T10:10:49,724  INFO CommunicationManager:106 COMMUNICATION NET: Python Service is LIVE.
+2026-07-21T10:10:49,726  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.rl.core.RLModeChoiceListener with priority 10.0
+2026-07-21T10:10:49,809  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.core.controler.ControlerDefaultsModule$1 with priority 0.0
+2026-07-21T10:10:49,878  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.guice.DependencyGraphControllerListener with priority 0.0
+2026-07-21T10:10:49,881  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.counts.CountsControllerListener with priority 0.0
+2026-07-21T10:10:49,883  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.analysis.ModeChoiceCoverageControllerListener with priority 0.0
+2026-07-21T10:10:49,884  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.analysis.ModeStatsControllerListener with priority 0.0
+2026-07-21T10:10:49,889  INFO ControllerListenerManagerImpl:121 calling notifyStartup on org.matsim.analysis.ScoreStatsControlerListener with priority 0.0
+2026-07-21T10:10:49,893  INFO ControllerListenerManagerImpl:124 all ControllerStartupListeners called.
+2026-07-21T10:10:49,897  INFO ControllerUtils:99 config dump before iterations start
+2026-07-21T10:10:49,943  INFO ControllerUtils:106 === logging config.xml skipped ===
+2026-07-21T10:10:49,945  INFO ControllerUtils:107 To enable debug output, set an environment variable i.e. export LOG_LEVEL='debug', or use Configurator...Level.DEBUG) in your run class.
+2026-07-21T10:10:49,946  INFO ControllerUtils:111 Complete config dump done.
+2026-07-21T10:10:49,947  INFO ControllerUtils:112 Checking consistency of config...
+2026-07-21T10:10:49,949  WARN ScoringConfigGroup$ScoringParameterSet:1638 marginal utl of wait set to: -0.84. Setting this different from zero is discouraged since there is already the marginal utility of time as a resource. The parameter was also used in the past for pt routing; if you did that, consider setting the new parameter waitingPt instead.
+2026-07-21T10:10:49,951  INFO VspConfigConsistencyCheckerImpl:62 NOT running vsp config consistency check because vsp defaults checking level is set to IGNORE
+2026-07-21T10:10:49,968  INFO ControllerUtils:114 Checking consistency of config done.
+2026-07-21T10:10:49,971  INFO PrepareForSimImpl:129 Network seems to be multimodal. Create car-only network which is handed over to PersonPrepareForSim.
+2026-07-21T10:10:49,973  INFO NetworkImpl:192  node # 1
+2026-07-21T10:10:49,975  INFO NetworkImpl:192  node # 4
+2026-07-21T10:10:49,976  INFO NetworkImpl:192  node # 16
+2026-07-21T10:10:49,978  INFO NetworkImpl:192  node # 64
+2026-07-21T10:10:49,980  INFO NetworkImpl:192  node # 256
+2026-07-21T10:10:49,982  INFO NetworkImpl:192  node # 1024
+2026-07-21T10:10:49,986  INFO NetworkImpl:152  link # 1
+2026-07-21T10:10:49,988  INFO NetworkImpl:152  link # 4
+2026-07-21T10:10:49,990  INFO NetworkImpl:152  link # 16
+2026-07-21T10:10:49,992  INFO NetworkImpl:152  link # 64
+2026-07-21T10:10:49,994  INFO NetworkImpl:152  link # 256
+2026-07-21T10:10:49,998  INFO NetworkImpl:152  link # 1024
+2026-07-21T10:10:50,013  WARN XY2LinksForFacilities:51 There is no link for at least a facility. Assigning links for such facilities from coords.
+2026-07-21T10:10:50,017  WARN XY2LinksForFacilities:52  This message given only once.
+2026-07-21T10:10:50,030  INFO NetworkImpl:411 building QuadTree for nodes: xrange(678125.237,687483.1438); yrange(4818749.2408,4832295.5857)
+2026-07-21T10:10:50,036  INFO NetworkImpl:420 Building QuadTree took 0.01 seconds.
+2026-07-21T10:10:50,116  WARN PrepareForSimImpl:269 'usePersonIdForMissingVehicleId' is deprecated. It will be removed soon. Use
+2026-07-21T10:10:50,119  WARN PrepareForSimImpl:270 		config.qsim().setUsePersonIdForMissingVehicleId( false );
+2026-07-21T10:10:50,122  WARN PrepareForSimImpl:271 in code, and 
+2026-07-21T10:10:50,124  WARN PrepareForSimImpl:272 	<module name="qsim" >
+2026-07-21T10:10:50,128  WARN PrepareForSimImpl:273 		<param name="usePersonIdForMissingVehicleId" value="false" />
+2026-07-21T10:10:50,130  WARN PrepareForSimImpl:274 in the config xml.
+2026-07-21T10:10:50,132  INFO Counter:71 [VehiclesImpl] added vehicle # 1
+2026-07-21T10:10:50,134  INFO Counter:71 [VehiclesImpl] added vehicle # 4
+2026-07-21T10:10:50,135  INFO Counter:71 [VehiclesImpl] added vehicle # 16
+2026-07-21T10:10:50,136  INFO Counter:71 [VehiclesImpl] added vehicle # 64
+2026-07-21T10:10:50,139  INFO Counter:71 [VehiclesImpl] added vehicle # 256
+2026-07-21T10:10:50,144  INFO Counter:71 [VehiclesImpl] added vehicle # 1024
+2026-07-21T10:10:50,150  INFO Counter:71 [VehiclesImpl] added vehicle # 4096
+2026-07-21T10:10:50,172  INFO Counter:71 [VehiclesImpl] added vehicle # 16384
+2026-07-21T10:10:50,234  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,237  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,238  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,243  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,246  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,247  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,253  INFO RandomizingTimeDistanceTravelDisutilityFactory:86  sigma: 3.0; resulting normalization: 0.011108996538242306
+2026-07-21T10:10:50,273  INFO Counter:71 [PersonPrepareForSim] handled person # 1
+2026-07-21T10:10:50,276  INFO Counter:71 [PersonPrepareForSim] handled person # 4
+2026-07-21T10:10:50,277  INFO NetworkImpl:411 building QuadTree for nodes: xrange(678125.237,687483.1438); yrange(4818749.2408,4832295.5857)
+2026-07-21T10:10:50,280  INFO NetworkImpl:420 Building QuadTree took 0.005 seconds.
+2026-07-21T10:10:50,285  INFO Counter:71 [PersonPrepareForSim] handled person # 16
+2026-07-21T10:10:50,296  INFO Counter:71 [PersonPrepareForSim] handled person # 64
+2026-07-21T10:10:50,317  INFO Counter:71 [PersonPrepareForSim] handled person # 256
+2026-07-21T10:10:50,353  INFO Counter:71 [PersonPrepareForSim] handled person # 1024
+2026-07-21T10:10:50,462  INFO Counter:71 [PersonPrepareForSim] handled person # 4096
+2026-07-21T10:10:50,641  INFO Counter:76 [PersonPrepareForSim] handled person # 8385
+2026-07-21T10:10:50,647  INFO AbstractController:136 ###################################################
+2026-07-21T10:10:50,650  INFO AbstractController:137 ### ITERATION 0 BEGINS
+2026-07-21T10:10:50,661  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.rl.core.RLModeChoiceListener with priority 10.0
+2026-07-21T10:10:50,665  INFO RLModeChoiceListener:210 Initializing Mode Location Tagging for all RL agents at start of iteration 0
+2026-07-21T10:10:50,736  INFO AgentAssetInventory:107 Geo-Tags attached to all agents in the environment.
+2026-07-21T10:10:50,741  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.analysis.LegTimesControllerListener with priority 0.0
+2026-07-21T10:10:50,743  INFO EventsManagerImpl:135 === Logging of event-handlers skipped ===
+2026-07-21T10:10:50,744  INFO EventsManagerImpl:136 To enable debug output, set an environment variable i.e. export LOG_LEVEL='debug', or use Configurator...Level.DEBUG) in your run class.
+2026-07-21T10:10:50,746  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonDepartureEvent
+2026-07-21T10:10:50,747  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonArrivalEvent
+2026-07-21T10:10:50,750  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.ActivityEndEvent
+2026-07-21T10:10:50,753  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.ActivityStartEvent
+2026-07-21T10:10:50,755  INFO EventsManagerImpl:135 === Logging of event-handlers skipped ===
+2026-07-21T10:10:50,757  INFO EventsManagerImpl:136 To enable debug output, set an environment variable i.e. export LOG_LEVEL='debug', or use Configurator...Level.DEBUG) in your run class.
+2026-07-21T10:10:50,760  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonDepartureEvent
+2026-07-21T10:10:50,761  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonArrivalEvent
+2026-07-21T10:10:50,762  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.ActivityEndEvent
+2026-07-21T10:10:50,764  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.ActivityStartEvent
+2026-07-21T10:10:50,765  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.analysis.LegHistogramListener with priority 0.0
+2026-07-21T10:10:50,767  INFO EventsManagerImpl:135 === Logging of event-handlers skipped ===
+2026-07-21T10:10:50,769  INFO EventsManagerImpl:136 To enable debug output, set an environment variable i.e. export LOG_LEVEL='debug', or use Configurator...Level.DEBUG) in your run class.
+2026-07-21T10:10:50,771  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonDepartureEvent
+2026-07-21T10:10:50,774  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonArrivalEvent
+2026-07-21T10:10:50,776  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonStuckEvent
+2026-07-21T10:10:50,778  INFO EventsManagerImpl:135 === Logging of event-handlers skipped ===
+2026-07-21T10:10:50,779  INFO EventsManagerImpl:136 To enable debug output, set an environment variable i.e. export LOG_LEVEL='debug', or use Configurator...Level.DEBUG) in your run class.
+2026-07-21T10:10:50,781  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonDepartureEvent
+2026-07-21T10:10:50,782  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonArrivalEvent
+2026-07-21T10:10:50,783  INFO EventsManagerImpl:205     > org.matsim.api.core.v01.events.PersonStuckEvent
+2026-07-21T10:10:50,786  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.analysis.LinkStatsControllerListener with priority 0.0
+2026-07-21T10:10:50,788  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.core.replanning.ReplanningContextImpl with priority 0.0
+2026-07-21T10:10:50,789  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.core.scoring.ScoringFunctionsForPopulation$$Lambda/0x0000000059466de8 with priority 0.0
+2026-07-21T10:10:50,844  INFO ControllerListenerManagerImpl:188 calling notifyIterationStarts on org.matsim.core.scoring.ExperiencedPlansServiceImpl with priority 0.0
+2026-07-21T10:10:50,853  INFO ControllerListenerManagerImpl:191 [it.0] all ControllerIterationStartsListeners called.
+2026-07-21T10:10:50,857  INFO ControllerListenerManagerImpl:293 calling notifyBeforeMobsim on org.matsim.core.controler.corelisteners.EventsHandlingImpl with priority 0.0
+2026-07-21T10:10:50,859  INFO EventsManagerImpl:169 resetting Event-Handlers
+2026-07-21T10:10:50,862  INFO EventsManagerImpl:175   org.matsim.core.trafficmonitoring.TravelTimeCalculator
+2026-07-21T10:10:50,867  INFO EventsManagerImpl:175   org.matsim.withinday.trafficmonitoring.WithinDayTravelTime
+2026-07-21T10:10:50,877  INFO EventsManagerImpl:175   org.matsim.analysis.VolumesAnalyzer
+2026-07-21T10:10:50,879  INFO EventsManagerImpl:175   ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorFactory$$Lambda/0x00000000594534d8
+2026-07-21T10:10:50,880  INFO EventsManagerImpl:175   org.matsim.core.scoring.ScoringFunctionsForPopulation
+2026-07-21T10:10:50,882  INFO EventsManagerImpl:175   org.matsim.analysis.LegHistogram
+2026-07-21T10:10:50,884  INFO EventsManagerImpl:175   org.matsim.rl.core.RLModeChoiceListener
+2026-07-21T10:10:50,886  INFO EventsManagerImpl:175   org.matsim.analysis.CalcLegTimes
+2026-07-21T10:10:50,888  INFO ControllerListenerManagerImpl:293 calling notifyBeforeMobsim on org.matsim.core.controler.corelisteners.PlansDumpingImpl with priority 0.0
+2026-07-21T10:10:50,891  INFO ControllerListenerManagerImpl:299 calling notifyBeforeMobsim on org.matsim.core.population.VspPlansCleaner with priority 0.0
+2026-07-21T10:10:50,933  INFO ControllerListenerManagerImpl:302 [it.0] all ControlerBeforeMobsimListeners called.
+2026-07-21T10:10:50,937  INFO PrepareForMobsimImpl:86 Network seems to be multimodal. Create car-only network which is handed over to PersonPrepareForSim.
+2026-07-21T10:10:50,938  INFO NetworkImpl:192  node # 1
+2026-07-21T10:10:50,940  INFO NetworkImpl:192  node # 4
+2026-07-21T10:10:50,942  INFO NetworkImpl:192  node # 16
+2026-07-21T10:10:50,943  INFO NetworkImpl:192  node # 64
+2026-07-21T10:10:50,945  INFO NetworkImpl:192  node # 256
+2026-07-21T10:10:50,948  INFO NetworkImpl:192  node # 1024
+2026-07-21T10:10:50,951  INFO NetworkImpl:152  link # 1
+2026-07-21T10:10:50,953  INFO NetworkImpl:152  link # 4
+2026-07-21T10:10:50,955  INFO NetworkImpl:152  link # 16
+2026-07-21T10:10:50,958  INFO NetworkImpl:152  link # 64
+2026-07-21T10:10:50,960  INFO NetworkImpl:152  link # 256
+2026-07-21T10:10:50,964  INFO NetworkImpl:152  link # 1024
+2026-07-21T10:10:50,988  INFO Counter:71 [PersonPrepareForSim] handled person # 4
+2026-07-21T10:10:50,988  INFO Counter:71 [PersonPrepareForSim] handled person # 1
+2026-07-21T10:10:50,988  INFO Counter:71 [PersonPrepareForSim] handled person # 16
+2026-07-21T10:10:50,989  INFO Counter:71 [PersonPrepareForSim] handled person # 64
+2026-07-21T10:10:50,991  INFO Counter:71 [PersonPrepareForSim] handled person # 256
+2026-07-21T10:10:50,995  INFO Counter:71 [PersonPrepareForSim] handled person # 1024
+2026-07-21T10:10:51,006  INFO Counter:71 [PersonPrepareForSim] handled person # 4096
+2026-07-21T10:10:51,022  INFO Counter:76 [PersonPrepareForSim] handled person # 8385
+2026-07-21T10:10:51,126  INFO MobsimListenerManager:50 calling addQueueSimulationListener
+2026-07-21T10:10:51,129  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.withinday.trafficmonitoring.WithinDayTravelTime
+2026-07-21T10:10:51,130  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeCleanupListener
+2026-07-21T10:10:51,131  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimInitializedListener
+2026-07-21T10:10:51,133  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener
+2026-07-21T10:10:51,134  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
+2026-07-21T10:10:51,135  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener
+2026-07-21T10:10:51,136  INFO MobsimListenerManager:50 calling addQueueSimulationListener
+2026-07-21T10:10:51,138  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.rl.core.RLModeChoiceListener
+2026-07-21T10:10:51,140  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimAfterSimStepListener
+2026-07-21T10:10:51,143  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
+2026-07-21T10:10:51,144  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener
+2026-07-21T10:10:51,180  INFO QSimProvider:131 Added MobsimEngine class org.matsim.core.mobsim.qsim.ActivityEngineDefaultImpl
+2026-07-21T10:10:51,182  INFO QSimProvider:137 Added Activityhandler class org.matsim.core.mobsim.qsim.ActivityEngineDefaultImpl
+2026-07-21T10:10:51,252  WARN QueueWithBuffer:515 Link 237059098_1_sidewalk too small: enlarge storage capacity from: 0.27775 Vehicles to: 2.8253834590384614 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,257  WARN QueueWithBuffer:515 Link 9902762_1_sidewalk too small: enlarge storage capacity from: 2.6995486933333335 Vehicles to: 43.25767209076923 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,263  WARN QueueWithBuffer:515 Link 73803813_1_sidewalk too small: enlarge storage capacity from: 5.797440253333334 Vehicles to: 92.8984055978846 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,270  WARN QueueWithBuffer:515 Link 9905412_0_r_sidewalk too small: enlarge storage capacity from: 1.3395424533333333 Vehicles to: 21.46487979307692 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,278  WARN QueueWithBuffer:515 Link 236805320_2L3_sidewalk too small: enlarge storage capacity from: 6.35116548 Vehicles to: 101.77131992711537 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,282  WARN QueueWithBuffer:515 Link 237172233_0_sidewalk too small: enlarge storage capacity from: 6.341838840000001 Vehicles to: 101.62186948903846 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,287  WARN QueueWithBuffer:515 Link 237784508_4_r_sidewalk too small: enlarge storage capacity from: 5.359066386666667 Vehicles to: 85.8738858978846 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,290  WARN QueueWithBuffer:515 Link 9904814_7_rL1_sidewalk too small: enlarge storage capacity from: 5.408024080000001 Vehicles to: 86.65838585884615 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,294  WARN QueueWithBuffer:515 Link 9903665_2_r_sidewalk too small: enlarge storage capacity from: 2.6288444533333335 Vehicles to: 42.12470462961538 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,296  WARN QueueWithBuffer:515 Link 236796987_5_sidewalk too small: enlarge storage capacity from: 2.8883091600000004 Vehicles to: 46.28237706865385 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,299  WARN QueueWithBuffer:515 Link 236799143_0_sidewalk too small: enlarge storage capacity from: 1.1398134800000002 Vehicles to: 18.2644150425 Vehicles.  This is not fatal, but modifies the traffic flow dynamics.
+2026-07-21T10:10:51,302  WARN QueueWithBuffer:518 Additional warnings of this type are suppressed.
+2026-07-21T10:10:51,335  INFO QSimProvider:131 Added MobsimEngine class org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngineWithThreadpool
+2026-07-21T10:10:51,337  INFO QSimProvider:143 Added DepartureHandler class org.matsim.core.mobsim.qsim.qnetsimengine.NetworkModeDepartureHandlerDefaultImpl
+2026-07-21T10:10:51,341  INFO QSimProvider:131 Added MobsimEngine class org.matsim.core.mobsim.qsim.DefaultTeleportationEngine
+2026-07-21T10:10:51,344  INFO QSimProvider:143 Added DepartureHandler class org.matsim.core.mobsim.qsim.DefaultTeleportationEngine
+2026-07-21T10:10:51,346  INFO QSimProvider:149 Added AgentSource class org.matsim.core.mobsim.qsim.agents.PopulationAgentSource
+2026-07-21T10:10:51,348  INFO MobsimListenerManager:50 calling addQueueSimulationListener
+2026-07-21T10:10:51,349  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimListener
+2026-07-21T10:10:51,351  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener
+2026-07-21T10:10:51,352  INFO MobsimListenerManager:54   assigned class org.matsim.core.mobsim.framework.listeners.MobsimListener to interface org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueueEngine
+2026-07-21T10:10:51,355  INFO QSimProvider:155 Added MobsimListener class org.matsim.core.mobsim.qsim.messagequeueengine.MessageQueueEngine
+2026-07-21T10:10:51,357  INFO QSimProvider:131 Added MobsimEngine class org.matsim.core.mobsim.qsim.pt.TransitQSimEngine
+2026-07-21T10:10:51,359  INFO QSimProvider:143 Added DepartureHandler class org.matsim.core.mobsim.qsim.pt.TransitQSimEngine
+2026-07-21T10:10:51,361  INFO QSimProvider:149 Added AgentSource class org.matsim.core.mobsim.qsim.pt.TransitQSimEngine
+2026-07-21T10:10:51,369  INFO VehicleUtils:431 adding scenario element for allvehicles container
+2026-07-21T10:10:51,372  INFO Counter:71 [VehiclesImpl] added vehicle # 1
+2026-07-21T10:10:51,374  INFO Counter:71 [VehiclesImpl] added vehicle # 4
+2026-07-21T10:10:51,376  INFO Counter:71 [VehiclesImpl] added vehicle # 16
+2026-07-21T10:10:51,381  INFO Counter:71 [VehiclesImpl] added vehicle # 64
+2026-07-21T10:10:51,389  INFO Counter:71 [VehiclesImpl] added vehicle # 256
+2026-07-21T10:10:51,400  INFO Counter:71 [VehiclesImpl] added vehicle # 1024
+2026-07-21T10:10:51,434  INFO Counter:71 [VehiclesImpl] added vehicle # 4096
+2026-07-21T10:10:51,461  INFO PopulationUtils:1324 adding scenario element for allpersons container
+2026-07-21T10:10:51,463  INFO Counter:71 PopulationImpl; person # 1
+2026-07-21T10:10:51,465  INFO Counter:71 PopulationImpl; person # 4
+2026-07-21T10:10:51,469  INFO Counter:71 PopulationImpl; person # 16
+2026-07-21T10:10:51,478  INFO Counter:71 PopulationImpl; person # 64
+2026-07-21T10:10:51,491  INFO Counter:71 PopulationImpl; person # 256
+2026-07-21T10:10:51,513  INFO Counter:71 PopulationImpl; person # 1024
+2026-07-21T10:10:51,601  INFO Counter:71 PopulationImpl; person # 4096
+2026-07-21T10:10:51,660  INFO ReconstructingUmlaufBuilder:123 Generating rotation segments
+2026-07-21T10:10:51,663  INFO ReconstructingUmlaufBuilder:133 Finished generating rotation segments
+2026-07-21T10:10:51,716  INFO AbstractQNetsimEngine:423 Assigned 453 nodes and 1706 links to QSimEngineRunner #0
+2026-07-21T10:10:51,718  INFO AbstractQNetsimEngine:423 Assigned 453 nodes and 1670 links to QSimEngineRunner #1
+2026-07-21T10:10:51,719  INFO AbstractQNetsimEngine:423 Assigned 452 nodes and 1694 links to QSimEngineRunner #2
+2026-07-21T10:10:51,720  INFO AbstractQNetsimEngine:423 Assigned 452 nodes and 1648 links to QSimEngineRunner #3
+2026-07-21T10:10:51,754  WARN EditTrips:96 InternalInterface is null. Replanning of pt/transit legs will not work properly and will likely fail.
+2026-07-21T10:10:51,756  WARN EditTrips:114 no TransitStopAgentTracker found in qsim. Replanning of pt/transit legs will not work properly and will likely fail.
+2026-07-21T10:10:51,763  INFO WithinDayTravelTime:425 WithinDayTravelTime at 05:00:00 #links=0
+2026-07-21T10:10:51,765  INFO Counter:71 EventsManagerImpl; event #1
+2026-07-21T10:10:51,768  INFO Counter:71 EventsManagerImpl; event #4
+2026-07-21T10:10:51,770  INFO Counter:71 EventsManagerImpl; event #16
+2026-07-21T10:10:51,777  INFO AbstractQNetsimEngine:361 SIMULATION (QNetsimEngine) AT 05:00:00 : #links=0 #nodes=10
+2026-07-21T10:10:51,782  INFO QSim:551 SIMULATION (NEW QSim) AT 05:00:00 : #active agents=10435 lost=0 simT=0.0s realT=0s; (s/r): 0.0
+2026-07-21T10:10:51,795  INFO Counter:71 EventsManagerImpl; event #64
+2026-07-21T10:10:52,027  INFO Counter:71 EventsManagerImpl; event #256
+2026-07-21T10:10:52,478  INFO Counter:71 EventsManagerImpl; event #1024
+2026-07-21T10:10:52,648  INFO Counter:71 WithinDayTravelTime: enlarged time bin size: 1
+2026-07-21T10:10:53,029  INFO Counter:71 WithinDayTravelTime: shrunk time bin size: 1
+2026-07-21T10:10:53,502  INFO Counter:71 WithinDayTravelTime: enlarged time bin size: 4
+2026-07-21T10:10:53,692  INFO Counter:71 EventsManagerImpl; event #4096
+2026-07-21T10:10:53,902  INFO Counter:71 WithinDayTravelTime: shrunk time bin size: 4
+2026-07-21T10:10:57,340  INFO WithinDayTravelTime:425 WithinDayTravelTime at 06:00:00 #links=24
+2026-07-21T10:10:57,343  INFO AbstractQNetsimEngine:361 SIMULATION (QNetsimEngine) AT 06:00:00 : #links=8 #nodes=14
+2026-07-21T10:10:57,344  INFO QSim:551 SIMULATION (NEW QSim) AT 06:00:00 : #active agents=10324 lost=0 simT=3600.0s realT=6s; (s/r): 600.0
+2026-07-21T10:10:58,590  INFO Counter:71 EventsManagerImpl; event #16384
+2026-07-21T10:10:58,723  INFO Counter:71 WithinDayTravelTime: enlarged time bin size: 16
+2026-07-21T10:10:59,105  INFO Counter:71 WithinDayTravelTime: shrunk time bin size: 16
+2026-07-21T10:11:02,723  INFO WithinDayTravelTime:425 WithinDayTravelTime at 07:00:00 #links=27
+2026-07-21T10:11:02,729  INFO AbstractQNetsimEngine:361 SIMULATION (QNetsimEngine) AT 07:00:00 : #links=8 #nodes=15
+2026-07-21T10:11:02,731  INFO QSim:551 SIMULATION (NEW QSim) AT 07:00:00 : #active agents=10204 lost=0 simT=7200.0s realT=11s; (s/r): 654.5454545454545
+2026-07-21T10:11:03,377  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 19704_1_pedestrian from link 119405104_4 to link 119405104_4_r_sidewalk
+2026-07-21T10:11:03,475  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 30618_1_pedestrian from link 236019189_2L2 to link 236019189_2L2_sidewalk
+2026-07-21T10:11:03,614  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 13103_1_pedestrian from link 34521461_1 to link 34521461_1_r_sidewalk
+2026-07-21T10:11:03,744  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 31008_1_pedestrian from link 236669174_1_rL2 to link 236669174_1_rL2_sidewalk
+2026-07-21T10:11:03,952  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 32132_3_pedestrian from link 238283216_0L2 to link 238283216_0L2_sidewalk
+2026-07-21T10:11:04,386  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 30112_1_pedestrian from link 236019189_2L2 to link 236019189_2L2_sidewalk
+2026-07-21T10:11:05,282  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 11828_3_pedestrian from link 120486427_2 to link 120486427_2_r_sidewalk
+2026-07-21T10:11:05,417  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 12790_1_pedestrian from link 236020330_0_rL1 to link 236020330_0_rL1_sidewalk
+2026-07-21T10:11:05,436  INFO NetworkModeDepartureHandlerDefaultImpl:109 teleport vehicle 31332_2_pedestrian from link 236019189_2L2 to link 236019189_2L2_sidewalk
+2026-07-21T10:11:05,438  INFO NetworkModeDepartureHandlerDefaultImpl:111 No more occurrences of teleported vehicles will be reported.
+2026-07-21T10:11:06,394  INFO Counter:71 WithinDayTravelTime: enlarged time bin size: 64
+2026-07-21T10:11:06,795  INFO Counter:71 WithinDayTravelTime: shrunk time bin size: 64
+2026-07-21T10:11:08,993  INFO Counter:71 WithinDayTravelTime: enlarged time bin size: 256
+2026-07-21T10:11:09,124  INFO Counter:71 EventsManagerImpl; event #65536
+2026-07-21T10:11:09,237  INFO Counter:71 WithinDayTravelTime: shrunk time bin size: 256
+2026-07-21T10:11:09,914  INFO RLModeChoiceListener:285 Replaning next trip for agent 10047_1 at time 28800.0
+2026-07-21T10:11:09,917  INFO RLModeChoiceListener:309 COMMUNICATION NET: Environment recorded for agent (10047_1)
+2026-07-21T10:11:09,923 ERROR RLModeChoiceListener:317 COMMUNICATION NET: Default mode is asssigned for the agent (10047_1)
+
+2026-07-21T10:11:09,926  INFO RLModeChoiceListener:321 RL MODE CHOICE: PEDESTRIAN is asssigned for the agent (10047_1)
+2026-07-21T10:11:09,928  INFO WithinDayAgentUtils:331 Adding vehicle 10047_1_pedestrian to the simulation
+2026-07-21T10:11:09,932  INFO WithinDayTravelTime:425 WithinDayTravelTime at 08:00:00 #links=450
+2026-07-21T10:11:09,934  INFO AbstractQNetsimEngine:361 SIMULATION (QNetsimEngine) AT 08:00:00 : #links=479 #nodes=52
+2026-07-21T10:11:09,936  INFO QSim:551 SIMULATION (NEW QSim) AT 08:00:00 : #active agents=10089 lost=0 simT=10800.0s realT=18s; (s/r): 600.0
+2026-07-21T10:11:11,254  INFO Counter:71 WithinDayTravelTime: enlarged time bin size: 1024
+2026-07-21T10:11:11,413  INFO Counter:71 WithinDayTravelTime: shrunk time bin size: 1024
+2026-07-21T10:11:18,090  INFO Counter:71 EventsManagerImpl; event #262144
+2026-07-21T10:11:19,002  INFO WithinDayTravelTime:425 WithinDayTravelTime at 09:00:00 #links=225
+2026-07-21T10:11:19,004  INFO AbstractQNetsimEngine:361 SIMULATION (QNetsimEngine) AT 09:00:00 : #links=147 #nodes=36
+2026-07-21T10:11:19,005  INFO QSim:551 SIMULATION (NEW QSim) AT 09:00:00 : #active agents=9987 lost=0 simT=14400.0s realT=27s; (s/r): 533.3333333333334
+2026-07-21T10:11:24,674  INFO RealTimeScoringEngine:141 REWARD: Agent 10047_1 | Trip Penalty: -29.6973 | Activity Reward: 155.7728 | Total Trip Score: 126.0755
+2026-07-21T10:11:24,675  INFO RealTimeScoringEngine:143 REWARD: Agent 10047_1 | Mode Discountinuity Penalty: 0.0000
+2026-07-21T10:11:24,676  INFO RealTimeScoringEngine:144 REWARD: Agent 10047_1 | Mode Tour Penalty: 0.0000
+2026-07-21T10:11:24,677  INFO RealTimeScoringEngine:145 REWARD: Agent 10047_1 | Step Reward: 126.0755
+2026-07-21T10:11:24,679  INFO Gbl:196 Thread performance: Thread=UpdateMeanTravelTimes2  cpu-time=1.134327603sec
+2026-07-21T10:11:24,679  INFO Gbl:196 Thread performance: Thread=UpdateMeanTravelTimes0  cpu-time=1.139785467sec
+2026-07-21T10:11:24,679  INFO Gbl:196 Thread performance: Thread=UpdateMeanTravelTimes3  cpu-time=1.138674345sec
+2026-07-21T10:11:24,680  INFO Gbl:196 Thread performance: Thread=UpdateMeanTravelTimes1  cpu-time=1.137664023sec
+2026-07-21T10:11:24,703  INFO Gbl:196 Thread performance: Thread=class org.matsim.core.events.SimStepParallelEventsManagerImpl$ProcessEventsRunnable0  cpu-time=2.261943736sec
+2026-07-21T10:11:24,703 ERROR AbstractController:225 Mobsim did not complete normally! afterMobsimListeners will be called anyway.
+java.lang.ClassCastException: class java.lang.String cannot be cast to class java.util.List (java.lang.String and java.util.List are in module java.base of loader 'bootstrap')
+	at org.matsim.rl.core.RLModeChoiceListener.computeRewardAndNextState(RLModeChoiceListener.java:472)
+	at org.matsim.rl.core.RLModeChoiceListener.lambda$notifyMobsimAfterSimStep$3(RLModeChoiceListener.java:256)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1939)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:632)
+	at org.matsim.rl.core.RLModeChoiceListener.notifyMobsimAfterSimStep(RLModeChoiceListener.java:255)
+	at org.matsim.core.mobsim.qsim.MobsimListenerManager.fireQueueSimulationAfterSimStepEvent(MobsimListenerManager.java:88)
+	at org.matsim.core.mobsim.qsim.QSim.doSimStep(QSim.java:410)
+	at org.matsim.core.mobsim.qsim.QSim.run(QSim.java:241)
+	at org.matsim.core.controler.NewControler.runMobSim(NewControler.java:130)
+	at org.matsim.core.controler.AbstractController$8.run(AbstractController.java:214)
+	at org.matsim.core.controler.AbstractController.iterationStep(AbstractController.java:246)
+	at org.matsim.core.controler.AbstractController.mobsim(AbstractController.java:210)
+	at org.matsim.core.controler.AbstractController.iteration(AbstractController.java:157)
+	at org.matsim.core.controler.AbstractController.doIterations(AbstractController.java:124)
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:84)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:71)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:54)
+	at org.matsim.core.controler.AbstractController.run(AbstractController.java:92)
+	at org.matsim.core.controler.NewControler.run(NewControler.java:86)
+	at org.matsim.core.controler.Controler.run(Controler.java:280)
+	at org.matsim.rl.core.RunExternalModeChoice.main(RunExternalModeChoice.java:123)
+2026-07-21T10:11:24,708  INFO AbstractController$9:237 ### ITERATION 0 fires after mobsim event
+2026-07-21T10:11:24,710  INFO ControllerListenerManagerImpl:324 calling notifyAfterMobsim on org.matsim.analysis.LegTimesControllerListener with priority 0.0
+2026-07-21T10:11:24,723  INFO LegTimesControllerListener:73 [0] average leg duration is: 346 seconds = 00:05:46
+2026-07-21T10:11:24,725  INFO ControllerListenerManagerImpl:324 calling notifyAfterMobsim on org.matsim.core.events.MobsimScopeEventHandling with priority 0.0
+2026-07-21T10:11:24,727  INFO ControllerListenerManagerImpl:324 calling notifyAfterMobsim on org.matsim.core.scoring.EventsToActivities$1 with priority 0.0
+2026-07-21T10:11:24,729  WARN CharyparNagelActivityScoring:274 The first and the last activity do not have the same type. 
+2026-07-21T10:11:24,731  WARN CharyparNagelActivityScoring:275 Will score the first activity from midnight to its end, and the last activity from its start to midnight.
+2026-07-21T10:11:24,733  WARN CharyparNagelActivityScoring:276 Because of the nonlinear function, this is not the same as scoring from start to end.
+2026-07-21T10:11:24,737  WARN CharyparNagelActivityScoring:277 first activity: act [type=home][coord=[x=686395.3629999999 | y=4824429.8456]][linkId=42145829_4][startTime=undefined][endTime=08:00:00][duration=undefined][facilityId=5809_18]
+2026-07-21T10:11:24,739  WARN CharyparNagelActivityScoring:278 last activity: act [type=work][coord=[x=682480.8057000004 | y=4824051.6094]][linkId=157789593_0][startTime=09:39:02][endTime=undefined][duration=undefined][facilityId=8188_10]
+2026-07-21T10:11:24,741  WARN CharyparNagelActivityScoring:279 This may also happen when plans are not completed when the simulation ends.
+2026-07-21T10:11:24,742  WARN CharyparNagelActivityScoring:281 Additional warnings of this type are suppressed.
+2026-07-21T10:11:24,761  INFO ControllerListenerManagerImpl:327 [it.0] all ControllerAfterMobsimListeners called.
+2026-07-21T10:11:24,764 ERROR MatsimRuntimeModifications:77 Getting uncaught Exception in Thread main
+java.lang.ClassCastException: class java.lang.String cannot be cast to class java.util.List (java.lang.String and java.util.List are in module java.base of loader 'bootstrap')
+	at org.matsim.rl.core.RLModeChoiceListener.computeRewardAndNextState(RLModeChoiceListener.java:472)
+	at org.matsim.rl.core.RLModeChoiceListener.lambda$notifyMobsimAfterSimStep$3(RLModeChoiceListener.java:256)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1939)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:632)
+	at org.matsim.rl.core.RLModeChoiceListener.notifyMobsimAfterSimStep(RLModeChoiceListener.java:255)
+	at org.matsim.core.mobsim.qsim.MobsimListenerManager.fireQueueSimulationAfterSimStepEvent(MobsimListenerManager.java:88)
+	at org.matsim.core.mobsim.qsim.QSim.doSimStep(QSim.java:410)
+	at org.matsim.core.mobsim.qsim.QSim.run(QSim.java:241)
+	at org.matsim.core.controler.NewControler.runMobSim(NewControler.java:130)
+	at org.matsim.core.controler.AbstractController$8.run(AbstractController.java:214)
+	at org.matsim.core.controler.AbstractController.iterationStep(AbstractController.java:246)
+	at org.matsim.core.controler.AbstractController.mobsim(AbstractController.java:210)
+	at org.matsim.core.controler.AbstractController.iteration(AbstractController.java:157)
+	at org.matsim.core.controler.AbstractController.doIterations(AbstractController.java:124)
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:84)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:71)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:54)
+	at org.matsim.core.controler.AbstractController.run(AbstractController.java:92)
+	at org.matsim.core.controler.NewControler.run(NewControler.java:86)
+	at org.matsim.core.controler.Controler.run(Controler.java:280)
+	at org.matsim.rl.core.RunExternalModeChoice.main(RunExternalModeChoice.java:123)
+2026-07-21T10:11:24,767  INFO MatsimRuntimeModifications:81 S H U T D O W N   ---   start shutdown.
+2026-07-21T10:11:24,768 ERROR MatsimRuntimeModifications:83 ERROR --- This is an unexpected shutdown!
+2026-07-21T10:11:24,771 ERROR MatsimRuntimeModifications:86 Shutdown possibly caused by the following Exception:
+java.lang.ClassCastException: class java.lang.String cannot be cast to class java.util.List (java.lang.String and java.util.List are in module java.base of loader 'bootstrap')
+	at org.matsim.rl.core.RLModeChoiceListener.computeRewardAndNextState(RLModeChoiceListener.java:472)
+	at org.matsim.rl.core.RLModeChoiceListener.lambda$notifyMobsimAfterSimStep$3(RLModeChoiceListener.java:256)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
+	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1939)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:632)
+	at org.matsim.rl.core.RLModeChoiceListener.notifyMobsimAfterSimStep(RLModeChoiceListener.java:255)
+	at org.matsim.core.mobsim.qsim.MobsimListenerManager.fireQueueSimulationAfterSimStepEvent(MobsimListenerManager.java:88)
+	at org.matsim.core.mobsim.qsim.QSim.doSimStep(QSim.java:410)
+	at org.matsim.core.mobsim.qsim.QSim.run(QSim.java:241)
+	at org.matsim.core.controler.NewControler.runMobSim(NewControler.java:130)
+	at org.matsim.core.controler.AbstractController$8.run(AbstractController.java:214)
+	at org.matsim.core.controler.AbstractController.iterationStep(AbstractController.java:246)
+	at org.matsim.core.controler.AbstractController.mobsim(AbstractController.java:210)
+	at org.matsim.core.controler.AbstractController.iteration(AbstractController.java:157)
+	at org.matsim.core.controler.AbstractController.doIterations(AbstractController.java:124)
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:84)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:71)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:54)
+	at org.matsim.core.controler.AbstractController.run(AbstractController.java:92)
+	at org.matsim.core.controler.NewControler.run(NewControler.java:86)
+	at org.matsim.core.controler.Controler.run(Controler.java:280)
+	at org.matsim.rl.core.RunExternalModeChoice.main(RunExternalModeChoice.java:123)
+2026-07-21T10:11:24,774  INFO ControllerListenerManagerImpl:155 calling notifyShutdown on org.matsim.core.controler.corelisteners.EventsHandlingImpl with priority 0.0
+2026-07-21T10:11:24,776  INFO ControllerListenerManagerImpl:162 calling notifyShutdown on org.matsim.rl.networking.CommunicationManager with priority 100.0
+2026-07-21T10:11:24,777  INFO CommunicationManager:71 COMMUNICATION NET: Shutting down Python Service...
+2026-07-21T10:11:24,780  INFO ControllerListenerManagerImpl:162 calling notifyShutdown on org.matsim.analysis.ModeChoiceCoverageControllerListener with priority 0.0
+2026-07-21T10:11:24,782  INFO ControllerListenerManagerImpl:162 calling notifyShutdown on org.matsim.analysis.ScoreStatsControlerListener with priority 0.0
+2026-07-21T10:11:24,787  INFO ControllerListenerManagerImpl:162 calling notifyShutdown on org.matsim.analysis.IterationTravelStatsControllerListener with priority 0.0
+2026-07-21T10:11:24,790  INFO PersonWriter:36 Writing all Persons to personscsv
+2026-07-21T10:11:24,913  INFO PersonWriter:54 ...done
+2026-07-21T10:11:24,914  INFO ControllerListenerManagerImpl:162 calling notifyShutdown on org.matsim.analysis.LinkStatsControllerListener with priority 0.0
+2026-07-21T10:11:25,013  INFO ControllerListenerManagerImpl:165 all ControlerShutdownListeners called.
+2026-07-21T10:11:25,014 ERROR MatsimRuntimeModifications:101 ERROR --- MATSim unexpectedly terminated. Please check the output or the logfile with warnings and errors for hints.
+2026-07-21T10:11:25,016 ERROR MatsimRuntimeModifications:102 ERROR --- results should not be used for further analysis.
+2026-07-21T10:11:25,018  INFO MatsimRuntimeModifications:104 S H U T D O W N   ---   shutdown completed.
+2026-07-21T10:11:25,019 ERROR MatsimRuntimeModifications:106 ERROR --- This was an unexpected shutdown! See the log file for a possible reason.
