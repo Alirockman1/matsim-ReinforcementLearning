@@ -1,7 +1,7 @@
 
 def prepare_state(data, trip_memory):
     #state = (data.encodedStateString)
-    state = data.encodedLatentSpace
+    state = tuple(data.rawBitStateRepresentation)
     
     trip_memory[data.agentID] = {
         "state": state,

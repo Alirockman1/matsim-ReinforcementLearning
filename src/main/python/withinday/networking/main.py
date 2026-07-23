@@ -41,24 +41,24 @@ def configure_session(
         logger.error(f"Configuration error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/decision/resolve", response_class=PlainTextResponse)
+@app.post("/decision/mode-choice", response_class=PlainTextResponse)
 def request_decision(
     observation: ObserverData, 
     service: BaseSimulationBridgeService = Depends(get_bridge_service)
 ):
     try:
-        return service.resolve_agent_decision(observation)
+        return service.request_decision(observation)
     except Exception as e:
         logger.error(f"Decision resolution failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/feedback/execution", status_code=status.HTTP_200_OK)
+@app.post("/feedback/score", status_code=status.HTTP_200_OK)
 def process_feedback(
     feedback: ArrivalData, 
     service: BaseSimulationBridgeService = Depends(get_bridge_service)
 ):
     try:
-        return service.process_execution_feedback(feedback)
+        return service.process_feedback(feedback)
     except Exception as e:
         logger.error(f"Feedback execution failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

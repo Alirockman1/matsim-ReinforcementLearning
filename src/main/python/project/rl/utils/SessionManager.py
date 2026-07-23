@@ -14,12 +14,11 @@ def update_experience(data, agent, daily_stats):
     # Determine the next state (Terminal state is None)
     next_state = None
 
-    if not data.terminal:
-        #next_state = (data.nextEncodedStateString)
-        next_state = data.nextEncodedLatentSpace
+    if not data.isTerminal:
+        next_state = tuple(data.nextRawBitStateRepresentation)
         agent.init_state(data.agentID, next_state)
 
-    return data.reward, next_state, data.terminal
+    return data.reward, next_state, data.isTerminal
 
 
 def finalize_session(data, trip_memory, agent, logger):

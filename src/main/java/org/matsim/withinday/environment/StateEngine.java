@@ -159,6 +159,27 @@ public class StateEngine{
         return bits;
     }
 
+    /**
+     * Creates a one-hot bit array of size totalGridCells with exactly one bit set to 1 
+     * at the agents position.
+     * @param cellIndex      The target 0-based cell index to activate.
+     * @param totalGridCells The total size of the grid array (e.g., 64 for an 8x8 grid).
+     * @return An integer array of size totalGridCells containing a single 1 at cellIndex.
+     */
+    public static int[] oneHotEncodePosition(int cellIndex, int totalGridCells) {
+        int[] bitArray = new int[totalGridCells];
+        
+        // Bounds check to ensure index falls within grid dimensions
+        if (cellIndex >= 0 && cellIndex < totalGridCells) {
+            bitArray[cellIndex] = 1;
+        } else {
+            // Fallback log/warning if the index goes out of bounds
+            System.err.println("Warning: cellIndex " + cellIndex + " is out of bounds for grid size " + totalGridCells);
+        }
+        
+        return bitArray;
+    }
+
     private static Map<Set<String>, Integer> buildModeAvailabilityLookup(String[] tourBasedModes) {
         Map<Set<String>, Integer> lookup = new HashMap<>();
 

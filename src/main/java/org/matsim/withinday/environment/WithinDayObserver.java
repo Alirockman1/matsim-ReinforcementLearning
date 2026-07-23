@@ -15,7 +15,7 @@ import org.matsim.rl.utils.CustomConfigGroup;
 
 /**
  * WithinDayObserver returns a snapshot of the matsim environment as a state representation.
- * The class is modeled such that custom observers can be built on top.
+ * The class is modeled such that custom observers can be built on top
  * while automatically inheriting cached demographic profiling and step-reward scoring.
  */
 public abstract class WithinDayObserver {
@@ -36,7 +36,6 @@ public abstract class WithinDayObserver {
      * @param sim The MATSim simulation engine.
      * @param currentTime The simulation time in which the observer is called up.
      * @param trip The future trip the agent is scheduled to undertake.
-     * 
      * * @return An array containing the state parameters. 
      */
     public abstract Map<String, Object> observeState(MobsimAgent agent, QSim sim, Trip trip, double currentTime, boolean isNextTripContext);
@@ -47,10 +46,33 @@ public abstract class WithinDayObserver {
     protected abstract CustomConfigGroup getCustomConfigGroup();
 
     /**
+     * Get the scoring engine for a specific agent ID if it exists.
+     * @param agentId The MATSim person ID.
+     * @return The RealTimeScoringEngine instance or null if not yet created.
+     */
+    public RealTimeScoringEngine getScoringEngine(Id<Person> agentId) {
+        return this.agentRewardCalculators.get(agentId);
+    }
+
+    /**
+     * Convenience overload to get the scoring engine directly from a MobsimAgent.
+     * @param agent The MATSim simulation agent.
+     * @return The RealTimeScoringEngine instance or null if not yet created.
+     */
+    public RealTimeScoringEngine getScoringEngine(MobsimAgent agent) {
+        return agent != null ? getScoringEngine(agent.getId()) : null;
+    }
+
+    /**
+     * Gets or creates a RealTimeScoringEngine for the specified agent ID.
+     */
+    public RealTimeScoringEngine getOrCreateScoringEngine(Id<Person> agentId) {
+        return this.agentRewardCalculators.computeIfAbsent(agentId, id -> new RealTimeScoringEngine(this.scenario, this));
+    }
+
+    /**
      * Method to extract agent core demographic parameters (saves the parameter for a single iteration)
      * @param agent The MATSim simulation agent being evaluated.
-     * @param sim The MATSim simulation engine.
-     * 
      * * @return A Dictionary containing: agent_id, subpopulation, sex, and age_group.
      */
     public Map<String, Object> getAgentDemographicRecord(MobsimAgent agent) {
@@ -68,12 +90,12 @@ public abstract class WithinDayObserver {
             String sex = (String) person.getAttributes().getAttribute("sex");
             Object rawAge = person.getAttributes().getAttribute("age");
 
-            agentProfile.put("agent_id", agentId.toString());
+            agentProfile.put("agentId", agentId);
             agentProfile.put("subpopulation", subpopulation != null ? subpopulation : "default");
             agentProfile.put("sex", sex != null ? sex.trim().toLowerCase() : "unknown");
             
             // Discretize the raw age attribute using the internal package strategy rules
-            agentProfile.put("age_group", StateEngine.discretizeAgeAttribute(rawAge));
+            agentProfile.put("ageGroup", StateEngine.discretizeAgeAttribute(rawAge));
         } else {
             log.warn("Agent '{}' not found in population.", agentId);
         }
@@ -85,17 +107,12 @@ public abstract class WithinDayObserver {
     /**
      * Method to compile immediate execution step utilities directly with the underlying RealTimeScoringEngine 
      * to compile immediate execution step utilities.
-     * @param agent The MATSim simulation agent being evaluated.
-     * @param currentTime The simulation time in which the observer is called up.
-     * @param sim The MATSim simulation engine.
-     * @param currentTime The simulation time in which the observer is called up.
-     * @param trip The future trip the agent is scheduled to undertake.
      */
     public RealTimeScoringEngine tripEvaluationMetrics(MobsimAgent agent, double currentTime, Activity activity, 
                                 String executedMode, Trip trip, double assetRetrievalTime, 
                                 int transferCount, Map<String, Integer> discontinuityPenalties) {
         
-        RealTimeScoringEngine rewardCalculator = agentRewardCalculators.computeIfAbsent(agent.getId(), id -> new RealTimeScoringEngine(this.scenario, this));
+        RealTimeScoringEngine rewardCalculator = getOrCreateScoringEngine(agent.getId());
 
         rewardCalculator.compute(agent, currentTime, activity, executedMode, trip, 
             assetRetrievalTime, transferCount, discontinuityPenalties);
@@ -104,9 +121,17 @@ public abstract class WithinDayObserver {
     }
 
     /**
-     * Reset the store libraries at the start of each new iteration.
+     * Resets internal observation registries and resets every active scoring engine at the start of each iteration.
      */
-    public void resetObservationRegistries() {
+    public void reset() {
+        // 1. Reset individual scoring engines before clearing references
+        for (RealTimeScoringEngine engine : this.agentRewardCalculators.values()) {
+            if (engine != null) {
+                engine.reset();
+            }
+        }
+
+        // 2. Clear maps for the new iteration
         this.agentDemographicRegistry.clear();
         this.agentRewardCalculators.clear();
     }

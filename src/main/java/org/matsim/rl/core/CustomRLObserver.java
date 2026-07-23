@@ -106,8 +106,8 @@ public class CustomRLObserver extends WithinDayObserver {
             // Bit state representation
             int[] timeBits = StateEngine.convertToBitStateRepresentation(discreteTimeBin,StateEngine.getTimeBinSize("demand_based"));
             int[] assetBits = StateEngine.convertToBitStateRepresentation(assetState,StateEngine.getAssetBinSize());
-            int[] currentPositionBits = StateEngine.convertToBitStateRepresentation(currentDiscretePosition.cellIndex(),currentDiscretePosition.gridShape());
-            int[] nextPositionBits = StateEngine.convertToBitStateRepresentation(nextDiscretePosition.cellIndex(),nextDiscretePosition.gridShape());
+            int[] currentPositionBits = StateEngine.oneHotEncodePosition(currentDiscretePosition.cellIndex(),currentDiscretePosition.gridShape());
+            int[] nextPositionBits = StateEngine.oneHotEncodePosition(nextDiscretePosition.cellIndex(),nextDiscretePosition.gridShape());
 
             int totalLength = currentPositionBits.length + nextPositionBits.length + timeBits.length + 1 + assetBits.length;
             IntBuffer stateBuffer = ByteBuffer.allocate(totalLength * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
@@ -132,7 +132,7 @@ public class CustomRLObserver extends WithinDayObserver {
 
             // Bit state representation
             int[] assetBits = StateEngine.convertToBitStateRepresentation(assetState,StateEngine.getAssetBinSize());
-            int[] currentPositionBits = StateEngine.convertToBitStateRepresentation(currentDiscretePosition.cellIndex(),currentDiscretePosition.gridShape());
+            int[] currentPositionBits = StateEngine.oneHotEncodePosition(currentDiscretePosition.cellIndex(),currentDiscretePosition.gridShape());
 
             int totalLength = currentPositionBits.length + assetBits.length;
             IntBuffer stateBuffer = ByteBuffer.allocate(totalLength * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();

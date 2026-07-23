@@ -23,6 +23,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
 
 
 @Singleton
@@ -93,7 +94,6 @@ public class CommunicationManager implements StartupListener, ShutdownListener {
             );
             
             pb.inheritIO();
-
             pb.directory(serverPath);
 
             this.pythonProcess = pb.start();
@@ -112,7 +112,7 @@ public class CommunicationManager implements StartupListener, ShutdownListener {
     private boolean waitForPython() {
         for (int i = 0; i < 30; i++) {
             try {
-                HttpURLConnection con = (HttpURLConnection) new URL(baseUrl + "/health").openConnection();
+                HttpURLConnection con = (HttpURLConnection) new URL(baseUrl + "/healthz").openConnection();
                 con.setRequestMethod("GET");
                 con.setConnectTimeout(1000);
                 if (con.getResponseCode() == 200) return true;
@@ -124,12 +124,20 @@ public class CommunicationManager implements StartupListener, ShutdownListener {
         return false;
     }
 
+    // Helper method to fix endpoint paths safely
+    private URI formatUrl(String requestName) {
+        String path = requestName.startsWith("/") ? requestName.substring(1) : requestName;
+        return URI.create(baseUrl + "/" + path);
+    }
+
     // --- Communication Network ---
 
     public String httpPost(String json, String requestName, long timeout) {
         try {
+            URI fullUrl = formatUrl(requestName);
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/" + requestName))
+                    .uri(fullUrl)
                     .timeout(Duration.ofSeconds(timeout))
                     .version(HttpClient.Version.HTTP_1_1)
                     .header("Content-Type", "application/json; charset=UTF-8")
@@ -155,8 +163,10 @@ public class CommunicationManager implements StartupListener, ShutdownListener {
 
     public String httpGet(String requestName, long timeout) {
         try {
+            URI fullUrl = formatUrl(requestName);
+
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/" + requestName))
+                    .uri(fullUrl)
                     .timeout(Duration.ofSeconds(timeout))
                     .GET()
                     .build();

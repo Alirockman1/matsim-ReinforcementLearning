@@ -1,4 +1,5 @@
 # --- PARAMETERS (Change these as needed to test your setup) ---
+$SERVICE_CLASS = "project.rl.networking.rl_bridge_service.ReinforcementLearningBridgeService"
 $SCENARIO_NAME = "sioux-falls"
 $OBJECTIVE = "single" 
 
@@ -6,7 +7,8 @@ $MATSIM_ITERATION = "6"
 $MAX_TRAINING_ITERATION = "5"
 $NUM_THREADS = "4"
 $MEMORY = "12g"
-$PARAMS = "alpha=0.367435 gamma=0.892101 epsilon_minimum=0.001044 epsilon_decay=0.966574 w_1=2.59894 w_2=3.405791"
+#$PARAMS = "alpha=0.367435 gamma=0.892101 epsilon_minimum=0.001044 epsilon_decay=0.966574 w_1=2.59894 w_2=3.405791"
+$PARAMS = "alpha=0.367435 gamma=0.892101 epsilon_minimum=0.001044 epsilon_decay=0.966574 w_1=1.0 w_2=1.0"
 
 # Development Pipeline Toggles
 $AGENT_ID = "10047_1"
@@ -111,6 +113,7 @@ wsl docker run --rm -it `
     -e JAVA_HEAP="$MEMORY" `
     -e PARAMS="$PARAMS" `
     -e SCENARIO="$SCENARIO_NAME" `
+    -e SERVICE_CLASS="$SERVICE_CLASS" `
     -v "${WSL_INPUT}:/app/scenarios/${SCENARIO_NAME}/input" `
     -v "${WSL_OUTPUT}:/app/scenarios/${SCENARIO_NAME}/output" `
     -v "${WSL_SHARED}:/app/shared_storage" `

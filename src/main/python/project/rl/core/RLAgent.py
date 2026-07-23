@@ -2,7 +2,6 @@ import random
 import pickle
 import os
 
-
 class DecentralizedQLearningAgent:
 
     RANDOM_SEED = 42

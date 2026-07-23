@@ -27,6 +27,7 @@ COPY src/ /app/src/
 # Install all the packages
 WORKDIR /app/src/main/python
 RUN pipenv install --system --deploy --skip-lock
+RUN pip install -e .
 
 # Copy the jar executable file
 COPY a7-rl-testbed-0.0.1-SNAPSHOT.jar /app/simulation.jar
@@ -43,4 +44,4 @@ WORKDIR /app
 
 # End point
 ENTRYPOINT ["python3"]
-CMD ["/app/src/main/python/matsim.py"]
+CMD ["/app/src/main/python/withinday/core/matsim.py"]

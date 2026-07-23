@@ -1,6 +1,4 @@
-from dataclasses import Field
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class ObserverData(BaseModel):
@@ -27,7 +25,7 @@ class ArrivalData(BaseModel):
     reward: float
     matsimScore: float
 
-    isTerminal: bool = Field(alias="isTerminal")
+    isTerminal: bool = Field(..., alias="isTerminal")
     nextRawStateObservation: Optional[dict] = None
     nextRawBitStateRepresentation: List[int]
     nextEncodedStateString: Optional[str] = None

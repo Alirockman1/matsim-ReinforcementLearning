@@ -3,9 +3,9 @@ import logging
 from typing import Dict, Any
 
 from python_matsim_bridge import BaseSimulationBridgeService
-from utils.SessionManager import *
-from utils.StateUtils import prepare_state, get_chosen_action, update_experience
-from core.RLAgent import DecentralizedQLearningAgent as QLearningAgent
+from project.rl.utils.SessionManager import *
+from project.rl.utils.StateUtils import prepare_state, get_chosen_action
+from project.rl.core.RLAgent import DecentralizedQLearningAgent as QLearningAgent
 
 logger = logging.getLogger("matsim_bridge")
 
@@ -58,7 +58,7 @@ class ReinforcementLearningBridgeService(BaseSimulationBridgeService):
     def request_decision(self, observation: Any):
         """
         Receives trip observation state, records memory, and selects
-        the agent's mode choice via the RL decision policy.
+        the agent's mode choice via the RL policy.
         """
         with self._lock:
             if not self.agent:
@@ -73,8 +73,7 @@ class ReinforcementLearningBridgeService(BaseSimulationBridgeService):
 
     def process_feedback(self, feedback: Any):
         """
-        Calculates trip rewards upon trip arrival, updates the Q-table,
-        and logs experience.
+        Calculates trip rewards upon trip arrival, updates the Q-table policy.
         """
         with self._lock:
             if not self.agent:
@@ -110,17 +109,50 @@ class ReinforcementLearningBridgeService(BaseSimulationBridgeService):
             model_file = self.session_config.get("modelFileName")
             if self.agent and model_file:
                 # Ensure target directory exists
-                os.makedirs(os.path.dirname(os.path.abspath(model_file)), exist_ok=True)
-                self.agent.save_q_table(model_file)
+                filePath = os.path.abspath(model_file)
+                os.makedirs(os.path.dirname(filePath), exist_ok=True)
+
+                self.agent.file_path = filePath
+                self.agent.save_q_table()
+                
                 logger.info(f"Q-Table successfully saved to {model_file}")
                 return True
             return False
 
     def get_service_metrics(self):
         """
-        Returns the active Q-Table dictionary for inspection/debugging.
+        Returns the active Q-Table (with stringified state keys), latest delta_q,
+        agent IDs, and population metadata for inspection/debugging.
         """
         with self._lock:
-            if self.agent and hasattr(self.agent, "q_table"):
-                return self.agent.q_table
-            return {}
+            if not self.agent or not hasattr(self.agent, "_q_table"):
+                return {
+                    "status": "uninitialized",
+                    "q_table": {},
+                    "agents": []
+                }
+
+            # 1. Convert Q-Table state keys to strings to ensure JSON serialization succeeds
+            safe_q_table = {}
+            for agent_id, state_map in self.agent._q_table.items():
+                safe_q_table[str(agent_id)] = {
+                    str(state_key): q_values 
+                    for state_key, q_values in state_map.items()
+                }
+
+            # 2. Extract population metadata and active agent IDs from trip memory
+            agents_info = []
+            for agent_id, memory in self.trip_memory.items():
+                agents_info.append({
+                    "agent_id": str(agent_id),
+                    "population": memory.get("population", "default")
+                })
+
+            # 3. Retrieve latest delta_q safely
+            latest_delta_q = float(getattr(self.agent, "delta_q", 0.0))
+
+            return {
+                "latest_delta_q": latest_delta_q,
+                "agents": agents_info,
+                "q_table": safe_q_table
+            }

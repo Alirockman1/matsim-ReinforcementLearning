@@ -1,8 +1,8 @@
 import csv
 import os
 import optuna
-from  parameter_tuning.nodes import WorkerNode
-import parameter_tuning.initialize_db as optimization_tuner
+from  withinday.core.nodes import WorkerNode
+import project.rl.parameter_tuning.initialize_db as optimization_tuner
 
 class HyperParameterOptimizer:
 

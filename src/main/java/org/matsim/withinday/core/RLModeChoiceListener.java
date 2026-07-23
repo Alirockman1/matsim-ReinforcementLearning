@@ -52,7 +52,7 @@ import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.utils.EditTrips;
 import org.matsim.withinday.utils.IterationEndReportingUtils;
-
+import org.matsim.withinday.utils.WithinDayAgentExperience;
 import org.matsim.rl.utils.CustomConfigGroup;
 
 import static org.matsim.withinday.core.RunExternalModeChoice.REINFORCEMENT_MODE;
@@ -70,10 +70,7 @@ import java.util.Map;
 
 public class RLModeChoiceListener implements StartupListener, IterationStartsListener, IterationEndsListener, MobsimBeforeSimStepListener, MobsimAfterSimStepListener, ActivityStartEventHandler {
     private static final Logger log = LogManager.getLogger(RLModeChoiceListener.class);
-    private final List<Id<Person>> activeRLAgents = new ArrayList<>();
-    private final Map<Id<Person>, RealTimeScoringEngine> agentRewardCalculators = new HashMap<>();
-    private final Map<Id<Person>, List<String>> agentExperiencedModes = new HashMap<>();
-    private final Map<Id<Person>, Double> agentAccumulatedDeltaQ = new HashMap<>();
+    private final Map<Id<Person>, WithinDayAgentExperience> agentExperiences = new HashMap<>();
 
     @Inject
     TripRouter router;
@@ -91,7 +88,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
     CommunicationManager pythonCommunicationManager;
 
     @Inject
-    WithinDayObserver customRLObserver;
+    WithinDayObserver customObserver;
 
     @Inject
     CustomConfigGroup customConfigGroup;
@@ -179,10 +176,8 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
             String jsonString = gson.toJson(jsonMap);
 
-            String reset = "initialize";
-
             // Send via Connection Manager
-            pythonCommunicationManager.httpPost(jsonString, reset, 30);
+            pythonCommunicationManager.httpPost(jsonString, "/session/configure", 30);
 
             // Find the network centeroid
             StateEngine.setNetworkCentroid(scenario.getNetwork());
@@ -209,10 +204,11 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
         // Reset the environment
         AgentAssetInventory.reset();
-        this.activeRLAgents.clear();
-        this.agentRewardCalculators.clear();
-        this.agentExperiencedModes.clear();
-        this.agentAccumulatedDeltaQ.clear();
+        this.agentExperiences.clear();
+
+        if (this.customObserver != null) {
+            this.customObserver.reset();
+        }
 
         // Sample agents from the population
         double samplingPercentage = this.customConfigGroup.getSamplingPercentage();
@@ -235,11 +231,11 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
     @Override
     public void notifyIterationEnds(IterationEndsEvent event){
-        IterationEndReportingUtils.writeAgentStatsCsv(event, this.agentRewardCalculators, this.agentExperiencedModes, this.agentAccumulatedDeltaQ);
+        IterationEndReportingUtils.writeAgentStatsCsv(event, this.agentExperiences);
 
         // Get the q_table for the agent
         try {
-            String qTable = pythonCommunicationManager.httpGet("get-qtable", 360);
+            String sessionMetrics = pythonCommunicationManager.httpGet("/session/metrics", 360);
         }catch (Exception e) {
             log.error("COMMUNICATION NET: Failed retriveing Q-Table. " + e.getMessage());
         }
@@ -314,19 +310,17 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
     	Id<Person> agentId = agent.getId();       
 
         // Get observation of the state
-		Map<String, Object> state = this.customRLObserver.observeState(agent, sim, nextTripLeg, simulationTime, false);
-        System.out.println("The state at activity end event is:" + state);
+		Map<String, Object> state = this.customObserver.observeState(agent, sim, nextTripLeg, simulationTime, false);
         state.put("simulationIteration", StateEngine.currentIteration);
 
         // Individual subpopulation
-        Map<String, Object> demographics = this.customRLObserver.getAgentDemographicRecord(agent);
+        Map<String, Object> demographics = this.customObserver.getAgentDemographicRecord(agent);
         state.put("subpopulation", demographics.getOrDefault("subpopulation", "default"));
 
         // Transfer package
         log.info("COMMUNICATION NET: Environment recorded for agent (" + agentId.toString() + ")");
         String jsonState = gson.toJson(state);
-        String newMode = pythonCommunicationManager.httpPost(jsonState, "get-action", 360);
-        System.out.println("The mode assigned by the backend algorithm is: " + newMode);
+        String newMode = pythonCommunicationManager.httpPost(jsonState, "/decision/mode-choice", 360);
         
         if (newMode == null){
             // Set default mode incase communication breaks down
@@ -335,9 +329,6 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         }
 
         log.info("RL MODE CHOICE: " + newMode.toUpperCase() + " is asssigned for the agent (" + agentId.toString() + ")");
-
-        // SHIFT TO THE PLANNER
-        this.agentExperiencedModes.computeIfAbsent(agentId, id -> new ArrayList<>()).add(newMode);
             
         // Route next trip
         List<? extends PlanElement> newNextTrip = editTrips.replanFutureTrip(oldNextTrip, WithinDayAgentUtils.getModifiablePlan(agent), newMode, agent.getActivityEndTime());
@@ -419,19 +410,29 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
             modeRetrievalTime = AgentAssetInventory.getModeRetrievalTimes(agent, this.scenario, currentTripIndex, tourBasedModes, this.log);
         }
 
-        RealTimeScoringEngine rewardCalculator = this.customRLObserver.tripEvaluationMetrics(
+        RealTimeScoringEngine rewardCalculator = this.customObserver.tripEvaluationMetrics(
             agent, simulationTime, previousActivity, currentModeUsed, completedTrip, modeRetrievalTime, numberOfTransfers, modeDiscontinuityPenaltyMap
+        );
+
+        WithinDayAgentExperience experience = this.agentExperiences.computeIfAbsent(
+            agentId, 
+            id -> new WithinDayAgentExperience(id, this.customObserver.getOrCreateScoringEngine(id))
         );
 
         double currentStepMatsimScore = rewardCalculator.getCurrentStepTripScore();
         double currentStepReward = rewardCalculator.getCurrentStepReward();
 
         // --- NEXT STATE DATA ---
-        Map<String, Object> nextState = this.customRLObserver.observeState(agent, sim, completedTrip, simulationTime, true);
-
+        Map<String, Object> nextState = this.customObserver.observeState(agent, sim, completedTrip, simulationTime, true);
+        
         if ((boolean) nextState.get("endOfDayFlag")){
             rewardCalculator.computeDayEndScore(agent, trips, completedTrip.getDestinationActivity());
             log.info("The end of the day score for " + agentId.toString() + " is: " + rewardCalculator.getAccumulatedDayScore());
+
+            experience.finalizeDay(
+                rewardCalculator.getAccumulatedDayReward(), 
+                rewardCalculator.getAccumulatedDayScore()
+            );
         }
 
         // REWARD MAP
@@ -445,7 +446,7 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
 
         // NEXT STATE MAP
         jsonMap.put("isTerminal", (boolean) nextState.get("endOfDayFlag"));
-        jsonMap.put("nextRawBitStateRepresentation", nextState.get("rawBitState"));
+        jsonMap.put("nextRawBitStateRepresentation", nextState.get("rawBitStateRepresentation"));
         //jsonMap.put("nextEncodedLatentSpace", nextEncodedLatentSpace);
 
         if ((boolean) nextState.get("endOfDayFlag")){
@@ -456,26 +457,33 @@ public class RLModeChoiceListener implements StartupListener, IterationStartsLis
         // Step info
         String jsonStep = new Gson().toJson(jsonMap);
 
-        log.info("COMMUNICATION NET: Sending Reward to Python: " + jsonStep);
+        String response = pythonCommunicationManager.httpPost(jsonStep, "/feedback/score", 360);
 
-        // SEND DATA TO PYTHON //
-        String stepResponse = pythonCommunicationManager.httpPost(jsonStep, "send-reward", 360);
+        double stepDeltaQ = 0.0; // Default fallback
 
-        System.out.println(stepResponse);
-
-        if (stepResponse != null && !stepResponse.isEmpty()) {
+        if (response != null && !response.isEmpty()) {
             try {
-                Map<String, Object> responseMap = gson.fromJson(stepResponse, HashMap.class);
+                Map<String, Object> responseMap = gson.fromJson(response, HashMap.class);
                 
-                if (responseMap.containsKey("delta_q")) {
-                    double stepDeltaQ = ((Number) responseMap.get("delta_q")).doubleValue();
-                    
-                    this.agentAccumulatedDeltaQ.merge(agentId, stepDeltaQ, Double::sum);
+                if (responseMap != null && responseMap.containsKey("delta_q")) {
+                    stepDeltaQ = ((Number) responseMap.get("delta_q")).doubleValue();
+                } else if (responseMap != null && responseMap.containsKey("deltaQ")) { 
+                    // Fallback check in case key is camelCase
+                    stepDeltaQ = ((Number) responseMap.get("deltaQ")).doubleValue();
+                } else {
+                    log.warn("COMMUNICATION NET: 'delta_q' missing in response for agent " + agentId + ". Response was: " + response);
                 }
             } catch (Exception ex) {
                 log.error("Failed to parse delta_q metrics response for agent " + agentId + ": " + ex.getMessage());
+                stepDeltaQ = -1.0;
             }
+        } else {
+            log.error("COMMUNICATION NET: Null or empty response received from /feedback/score for agent " + agentId);
         }
+
+        // ALWAYS record the trip step so experiencedModes, rewards, scores, and deltaQ stay synchronized!
+        experience.recordTrip(currentModeUsed, currentStepReward, currentStepMatsimScore, stepDeltaQ);
+
     }
     
     // Method to adjust the activity end time if needed.
