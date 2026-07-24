@@ -1,10 +1,12 @@
 package org.matsim.withinday.core;
 
-import org.matsim.api.core.v01.Id;
+import java.io.File;
+import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup;
@@ -15,106 +17,140 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controller;
 import org.matsim.core.controler.ControllerUtils;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.population.routes.RouteUtils;
+import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule;
-import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.rl.core.CustomRLObserver;
-import org.matsim.withinday.environment.RealTimeScoringEngine;
+import org.matsim.project.rl.core.CustomRLObserver;
+import org.matsim.project.rl.core.CustomRLReplanner;
+import org.matsim.project.rl.utils.CustomConfigGroup;
 import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.trafficmonitoring.WithinDayTravelTime;
-import org.matsim.rl.utils.CustomConfigGroup;
-
-import java.io.File;
-import java.util.Set;
 
 public class RunExternalModeChoice {
+    private static final Logger log = LogManager.getLogger(RunExternalModeChoice.class);
     public static final String REINFORCEMENT_MODE = "rl";
 
-    static void main(String[] args) {
-        // Path to the config file
-        String configPath;
-        
-        if (args == null || args.length == 0 || args[0] == null) {
-            configPath = "scenarios/sioux-falls/input/config.xml";
-        } else {
-            configPath = args[0];
-        }
-        
-        // Load the config
+    public static void main(String[] args) {
+        String configPath = (args != null && args.length > 0 && args[0] != null) 
+                ? args[0] 
+                : "scenarios/sioux-falls/input/config.xml";
+
+        // 1. Load Configurations
         CustomConfigGroup customGroupModule = new CustomConfigGroup();
         Config config = ConfigUtils.loadConfig(configPath, customGroupModule);
-        File secondaryParamsFile = new File(new File(configPath).getParentFile(), customGroupModule.getModelFileName());
-        ConfigUtils.loadConfig(secondaryParamsFile.getAbsolutePath(), customGroupModule);
 
-        // HPC commmand line interface
+        File secondaryParamsFile = new File(new File(configPath).getParentFile(), customGroupModule.getModelFileName());
+        if (secondaryParamsFile.exists()) {
+            ConfigUtils.loadConfig(secondaryParamsFile.getAbsolutePath(), customGroupModule);
+        }
+
+        // Apply HPC command-line parameter overrides
         if (args != null && args.length > 1) {
             String[] overrides = new String[args.length - 1];
             System.arraycopy(args, 1, overrides, 0, overrides.length);
             ConfigUtils.applyCommandline(config, overrides);
         }
 
-        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-
-        // disable on purpose; otherwise the router checks the new "rl" mode, which is only a dummy mode.
-        config.routing().setNetworkRouteConsistencyCheck(RoutingConfigGroup.NetworkRouteConsistencyCheck.disable);
-
-        // add walk scoring parameters, because the default router adds access and egress legs with mode walk.
-        config.scoring().addModeParams(new ScoringConfigGroup.ModeParams("walk"));
-
-        // reset replanning method assuming that the RL method does all the replanning within the simulation.
-        config.replanning().clearStrategySettings();
-        ReplanningConfigGroup.StrategySettings keepLast = new ReplanningConfigGroup.StrategySettings()
-                .setStrategyName(DefaultPlanStrategiesModule.DefaultSelector.KeepLastSelected)
-                .setWeight(1.0);
-        config.replanning().addStrategySettings(keepLast);
-
-        config.qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
-
-        // Disable iteration based writes
-        config.controller().setWritePlansInterval(0);       
-        config.controller().setWriteEventsInterval(0);      
-        config.controller().setWriteSnapshotsInterval(0);   
-
-        // Disable postprocessing
-        config.controller().setCreateGraphs(false);         
+        // 2. Configure Output Directory and Suppress Unnecessary File Generation
+        config.controller().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
+        config.controller().setWritePlansInterval(0);
+        config.controller().setWriteEventsInterval(0);
+        config.controller().setWriteSnapshotsInterval(0);
+        config.controller().setCreateGraphs(false);
         config.controller().setDumpDataAtEnd(false);
 
+        // SUPPRESS MODESTATS & COVERAGE CHARTS (modeChoiceCoverage, ph_modestats, pkm_modestats)
+        config.addModule(new ConfigGroupSuppressor("modeChoiceCoverage"));
+        config.createModule("analysis").addParam("writeModeStats", "false");
+        config.createModule("analysis").addParam("writeModeChoiceCoverage", "false");
+
+        // 3. MATSim Framework Settings
+        config.routing().setNetworkRouteConsistencyCheck(RoutingConfigGroup.NetworkRouteConsistencyCheck.disable);
+        config.scoring().addModeParams(new ScoringConfigGroup.ModeParams("walk"));
+        config.qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
+
+        // Reset replanning strategies to pure 'KeepLastSelected' (RL handles replanning within-day)
+        config.replanning().clearStrategySettings();
+        config.replanning().addStrategySettings(
+            new ReplanningConfigGroup.StrategySettings()
+                .setStrategyName(DefaultPlanStrategiesModule.DefaultSelector.KeepLastSelected)
+                .setWeight(1.0)
+        );
+
+        // 4. Load Scenario & Create Controller
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controller controller = ControllerUtils.createController(scenario);
 
-        // Dont we need to have all modes in the simulation to simulate real time congestion?? - ALI
-        //final WithinDayTravelTime travelTime = new WithinDayTravelTime(controller.getScenario(), Set.of(REINFORCEMENT_MODE));
-        final WithinDayTravelTime travelTime = new WithinDayTravelTime(controller.getScenario(), Set.of(REINFORCEMENT_MODE, TransportMode.car));
+        String replannerClass = config.createModule("withinday").getParams().get("replanner");
+        String observerClass = config.createModule("withinday").getParams().get("observer");
 
+        // 5. Register Guice Bindings
         controller.addOverridingModule(new AbstractModule() {
             @Override
             public void install() {
-                // bind the inter platform communication manager
-                this.bind(CommunicationManager.class).asEagerSingleton();
-                // Allow the communication manager to interact with matsim listeners
-                this.addControllerListenerBinding().to(CommunicationManager.class);
+                // Inter-Platform Communication Manager
+                bind(CommunicationManager.class).asEagerSingleton();
+                addControllerListenerBinding().to(CommunicationManager.class);
 
-                // bind the custom observer class
-                this.bind(WithinDayObserver.class).to(CustomRLObserver.class).asEagerSingleton();
+                // Observer & Replanner
+                bindDynamicClass(WithinDayObserver.class, observerClass, CustomRLObserver.class);
+                bindDynamicClass(WithinDayReplanner.class, replannerClass, CustomRLReplanner.class);
 
-                // bind the withinday travel time in order to be able to use it in the mode choice listener
-                this.bind(TravelTime.class).toInstance(travelTime);
-                this.addEventHandlerBinding().toInstance(travelTime);
-                this.addMobsimListenerBinding().toInstance(travelTime);
+                // Within-Day Travel Time (Tracks 'car' and 'rl' modes)
+                WithinDayTravelTime travelTime = new WithinDayTravelTime(scenario, Set.of(REINFORCEMENT_MODE, TransportMode.car));
+                bind(TravelTime.class).toInstance(travelTime);
+                addEventHandlerBinding().toInstance(travelTime);
+                addMobsimListenerBinding().toInstance(travelTime);
 
-                // bind the RLModeChoiceListener for mode replanning
-                this.bind(RLModeChoiceListener.class).asEagerSingleton();
-                // add the RL mode choice listener to the mobsim listeners
-                this.addMobsimListenerBinding().to(RLModeChoiceListener.class);
-                // add RL mode choice listener as event handler to listen for activity starts
-                this.addEventHandlerBinding().to(RLModeChoiceListener.class);
-                // Allow the RL mode choice to interact with matsim listeners
-                this.addControllerListenerBinding().to(RLModeChoiceListener.class);
+                // Within-Day Mode Choice Listener
+                bind(WithinDayModeChoiceListener.class).asEagerSingleton();
+                addMobsimListenerBinding().to(WithinDayModeChoiceListener.class);
+                addEventHandlerBinding().to(WithinDayModeChoiceListener.class);
+                addControllerListenerBinding().to(WithinDayModeChoiceListener.class);
+            }
+
+            /**
+             * Dynamically binds a class name String to a Guice target interface with type checking and fallback.
+             */
+            @SuppressWarnings("unchecked")
+            private <T> void bindDynamicClass(Class<T> targetInterface, String className, Class<? extends T> defaultClass) {
+                if (className == null || className.isBlank() || className.equalsIgnoreCase("default")) {
+                    bind(targetInterface).to(defaultClass).asEagerSingleton();
+                    return;
+                }
+
+                try {
+                    Class<?> clazz = Class.forName(className);
+                    
+                    // Ensure the loaded class actually implements or extends the target interface
+                    if (!targetInterface.isAssignableFrom(clazz)) {
+                        throw new IllegalArgumentException(String.format(
+                            "Configured class '%s' does not implement required interface '%s'", 
+                            className, targetInterface.getName()
+                        ));
+                    }
+
+                    bind(targetInterface).to((Class<? extends T>) clazz).asEagerSingleton();
+                    log.info("Successfully bound dynamic component {} -> {}", targetInterface.getSimpleName(), clazz.getName());
+
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("Could not find dynamic class: " + className, e);
+                }
             }
         });
+
+        // 6. Execute Simulation
         controller.run();
+    }
+
+    /**
+     * Internal helper class to disable unused analysis modules dynamically.
+     */
+    private static class ConfigGroupSuppressor extends org.matsim.core.config.ReflectiveConfigGroup {
+        public ConfigGroupSuppressor(String name) {
+            super(name);
+        }
     }
 }

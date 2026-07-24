@@ -11,7 +11,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.router.TripStructureUtils.Trip;
-import org.matsim.rl.utils.CustomConfigGroup;
+import org.matsim.project.rl.utils.CustomConfigGroup;
 
 /**
  * WithinDayObserver returns a snapshot of the matsim environment as a state representation.

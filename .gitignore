@@ -1,11 +1,22 @@
 # Folders (ignored everywhere in the project)
+**/backup/
+**/__pycache__/
+
+# Python bytecode caches
+*.py[cod]
+*$py.class
+
+# Build & Simulation Outputs
 target/
 output/
 bin/
 test/output/
 
-# Package files
-Dockerfile
+# Binaries & Maven artifacts
 *.jar
 *.war
 *.ear
+dependency-reduced-pom.xml
+
+# IDEs & System Files
+.vscode/

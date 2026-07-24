@@ -1,4 +1,4 @@
-package org.matsim.withinday.utils;
+package org.matsim.rl.utils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,11 +10,10 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.controler.events.IterationEndsEvent;
+import org.matsim.withinday.utils.IterationEndReportingUtils;
 import org.matsim.withinday.utils.WithinDayAgentExperience;
 
-public class IterationEndReportingUtils {
-
-    private static final Logger log = LogManager.getLogger(IterationEndReportingUtils.class);
+public class CustomIterationEndReporting extends IterationEndReportingUtils{
 
     public static void writeAgentStatsCsv(IterationEndsEvent event, Map<Id<Person>, WithinDayAgentExperience> agentExperiences) {
         
@@ -55,23 +54,6 @@ public class IterationEndReportingUtils {
                 );
             }
         }
-    }
-
-    /**
-     * Helper method to convert a List of values into a semicolon-delimited string (e.g. "1.2;3.4;5.6")
-     */
-    private static <T> String formatListAsString(List<T> list) {
-        if (list == null || list.isEmpty()) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < list.size(); i++) {
-            sb.append(list.get(i));
-            if (i < list.size() - 1) {
-                sb.append(";");
-            }
-        }
-        return sb.toString();
     }
 
     private static void saveRowToCsv(String directory, int iteration, String id, 

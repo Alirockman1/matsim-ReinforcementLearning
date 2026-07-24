@@ -12,6 +12,7 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
@@ -150,9 +151,60 @@ public abstract class WithinDayReplanner {
      * @param simulationTime Current simulation timestamp in seconds from midnight.
      * @return Status string response from feedback processing (e.g., "COMPLETED" or raw JSON response).
      */
-    public void step(MobsimAgent agent, double simulationTime, QSim sim) {
+    public void step(MobsimAgent agent, QSim sim, double simulationTime, boolean rescheduleActivityEndTime) {
         log.debug("Default step handler executed for agent {} at time {}", agent.getId(), simulationTime);
         log.info("Step completed");
+        
+        if (rescheduleActivityEndTime){
+            rescheduleActivityEnd(agent, sim, simulationTime, false);
+        }
+    }
+
+    /**
+     * Reschedules the active activity's end time in the QSim queue.
+     * Preserves original duration for flexible activities, or fixed end times for rigid activities.
+     *
+     * @param agent             The MATSim simulation agent.
+     * @param sim               The active queue simulation instance.
+     * @param activityStartTime The actual timestamp (in seconds) when the agent started this activity.
+     */
+    public void rescheduleActivityEnd(MobsimAgent agent, QSim sim, double activityStartTime, boolean isFlexible) {
+        PlanElement currentElement = WithinDayAgentUtils.getCurrentPlanElement(agent);
+        if (!(currentElement instanceof Activity)) {
+            log.warn("Cannot reschedule activity end for agent {}: current element is not an Activity.", agent.getId());
+            return;
+        }
+
+        Activity currentActivity = (Activity) currentElement;
+        int currentElementIndex = WithinDayAgentUtils.getCurrentPlanElementIndex(agent);
+
+        // Fetch original unmodifiable activity from initial selected plan
+        Person person = WithinDayAgentUtils.getModifiablePlan(agent).getPerson();
+        Plan originalPlan = person.getSelectedPlan();
+        Activity originalActivity = (Activity) originalPlan.getPlanElements().get(currentElementIndex);
+
+        double oldEndTime = currentActivity.getEndTime().orElse(-1.0);
+        double targetEndTime = oldEndTime;
+
+        if (isFlexible) {
+            if (originalActivity.getEndTime().isDefined() && originalActivity.getStartTime().isDefined()) {
+                double plannedDuration = originalActivity.getEndTime().seconds() - originalActivity.getStartTime().seconds();
+                targetEndTime = activityStartTime + Math.max(0.0, plannedDuration);
+            } else if (originalActivity.getMaximumDuration().isDefined()) {
+                targetEndTime = activityStartTime + originalActivity.getMaximumDuration().seconds();
+            } 
+        } else {
+            if (originalActivity.getEndTime().isDefined()) {
+                targetEndTime = originalActivity.getEndTime().seconds();
+            }
+        }
+
+        // Apply update in QSim queue
+        currentActivity.setEndTime(targetEndTime);
+        WithinDayAgentUtils.rescheduleActivityEnd(agent, sim);
+
+        log.info("RESCHEDULE ACTIVITY ({}) : Agent {} end time updated from {}s to {}s (Actual Start: {}s)",
+                isFlexible ? "FLEXIBLE" : "FIXED", agent.getId(), oldEndTime, targetEndTime, activityStartTime);
     }
 
     /**
@@ -170,7 +222,7 @@ public abstract class WithinDayReplanner {
      *
      * @param iteration The index of the iteration currently starting.
      */
-    public void reset(int iteration) {
+    public void reset(IterationEndsEvent event) {
         if (this.customObserver != null) {
             this.customObserver.reset();
         }

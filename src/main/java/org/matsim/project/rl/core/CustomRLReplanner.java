@@ -1,4 +1,4 @@
-package org.matsim.rl.core;
+package org.matsim.project.rl.core;
 
 import java.io.File;
 import java.util.Arrays;
@@ -12,6 +12,7 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
+import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
@@ -28,8 +29,9 @@ import org.matsim.withinday.utils.WithinDayAgentExperience;
 
 import com.google.gson.Gson;
 
-import org.matsim.rl.utils.CustomConfigGroup;
 import org.matsim.core.utils.timing.TimeInterpretation;
+import org.matsim.project.rl.utils.CustomConfigGroup;
+import org.matsim.project.rl.utils.CustomIterationEndReporting;
 
 /**
  * Reinforcement Learning extension of WithinDayReplanner.
@@ -95,11 +97,11 @@ public class CustomRLReplanner extends WithinDayReplanner {
      * @return Raw JSON response string from the Python feedback endpoint.
      */
     @Override
-    public void step(MobsimAgent agent, double simulationTime, QSim sim) {
+    public void step(MobsimAgent agent, QSim sim, double simulationTime, boolean rescheduleActivityEndTime) {
         Map<String, Object> demographics = this.customObserver.getAgentDemographicRecord(agent);
         Id<Person> agentId = (Id<Person>) demographics.get("agentId");
 
-                // The live plan and corresponding trips
+        // The live plan and corresponding trips
         Plan executedPlan = WithinDayAgentUtils.getModifiablePlan(agent);
         List<Trip> trips = TripStructureUtils.getTrips(executedPlan);
 
@@ -234,9 +236,16 @@ public class CustomRLReplanner extends WithinDayReplanner {
     }
 
     @Override
-    public void reset(int iteration) {
-        super.reset(iteration);
+    public void reset(IterationEndsEvent event) {
+        int iteration = event.getIteration();
+
+        // Write output for each iteration in a csv file
+        if (this.agentExperiences != null && !this.agentExperiences.isEmpty()) {
+            CustomIterationEndReporting.writeAgentStatsCsv(event, this.agentExperiences);
+        }
+        super.reset(event);
         this.agentExperiences.clear();
+        AgentAssetInventory.reset();
         log.info("RL PLANNER: Agent experiences cleared for iteration {}", iteration);
     }
 
