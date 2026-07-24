@@ -8,7 +8,9 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.ReflectiveConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.ReplanningConfigGroup;
 import org.matsim.core.config.groups.RoutingConfigGroup;
@@ -27,6 +29,7 @@ import org.matsim.project.rl.utils.CustomConfigGroup;
 import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.trafficmonitoring.WithinDayTravelTime;
+import org.matsim.withinday.utils.WithinDayConfigGroup;
 
 public class RunExternalModeChoice {
     private static final Logger log = LogManager.getLogger(RunExternalModeChoice.class);
@@ -39,7 +42,8 @@ public class RunExternalModeChoice {
 
         // 1. Load Configurations
         CustomConfigGroup customGroupModule = new CustomConfigGroup();
-        Config config = ConfigUtils.loadConfig(configPath, customGroupModule);
+        WithinDayConfigGroup withindayModule = new WithinDayConfigGroup();
+        Config config = ConfigUtils.loadConfig(configPath, customGroupModule, withindayModule);
 
         File secondaryParamsFile = new File(new File(configPath).getParentFile(), customGroupModule.getModelFileName());
         if (secondaryParamsFile.exists()) {
@@ -58,14 +62,12 @@ public class RunExternalModeChoice {
         config.controller().setWritePlansInterval(0);
         config.controller().setWriteEventsInterval(0);
         config.controller().setWriteSnapshotsInterval(0);
-        config.controller().setCreateGraphs(false);
+        config.controller().setCreateGraphsInterval(0);
         config.controller().setDumpDataAtEnd(false);
 
         // SUPPRESS MODESTATS & COVERAGE CHARTS (modeChoiceCoverage, ph_modestats, pkm_modestats)
-        config.addModule(new ConfigGroupSuppressor("modeChoiceCoverage"));
-        config.createModule("analysis").addParam("writeModeStats", "false");
-        config.createModule("analysis").addParam("writeModeChoiceCoverage", "false");
-
+        // ASK DANIEL !!!
+        
         // 3. MATSim Framework Settings
         config.routing().setNetworkRouteConsistencyCheck(RoutingConfigGroup.NetworkRouteConsistencyCheck.disable);
         config.scoring().addModeParams(new ScoringConfigGroup.ModeParams("walk"));
@@ -82,9 +84,12 @@ public class RunExternalModeChoice {
         // 4. Load Scenario & Create Controller
         Scenario scenario = ScenarioUtils.loadScenario(config);
         Controller controller = ControllerUtils.createController(scenario);
+        
+        final String replannerClass = (withindayModule != null) ? withindayModule.getParams().get("replanner") : null;
+        final String observerClass = (withindayModule != null) ? withindayModule.getParams().get("observer") : null;
 
-        String replannerClass = config.createModule("withinday").getParams().get("replanner");
-        String observerClass = config.createModule("withinday").getParams().get("observer");
+        System.out.println(replannerClass);
+        System.out.println(observerClass);
 
         // 5. Register Guice Bindings
         controller.addOverridingModule(new AbstractModule() {
@@ -117,14 +122,21 @@ public class RunExternalModeChoice {
             @SuppressWarnings("unchecked")
             private <T> void bindDynamicClass(Class<T> targetInterface, String className, Class<? extends T> defaultClass) {
                 if (className == null || className.isBlank() || className.equalsIgnoreCase("default")) {
+                    log.info("[WITHINDAY BINDING] No custom input provided for {}. Using DEFAULT class: {}", 
+                                    targetInterface.getSimpleName(), defaultClass.getName());
                     bind(targetInterface).to(defaultClass).asEagerSingleton();
                     return;
                 }
 
                 try {
-                    Class<?> clazz = Class.forName(className);
-                    
-                    // Ensure the loaded class actually implements or extends the target interface
+                    Class<?> clazz;
+                    try {
+                        clazz = Class.forName(className);
+                    } catch (ClassNotFoundException e) {
+                        String defaultPackage = defaultClass.getPackageName();
+                        clazz = Class.forName(defaultPackage + "." + className);
+                    }
+
                     if (!targetInterface.isAssignableFrom(clazz)) {
                         throw new IllegalArgumentException(String.format(
                             "Configured class '%s' does not implement required interface '%s'", 
@@ -132,8 +144,9 @@ public class RunExternalModeChoice {
                         ));
                     }
 
+                    log.info("[WITHINDAY BINDING] Resolved CUSTOM input for {}: {}", 
+                                    targetInterface.getSimpleName(), clazz.getName());
                     bind(targetInterface).to((Class<? extends T>) clazz).asEagerSingleton();
-                    log.info("Successfully bound dynamic component {} -> {}", targetInterface.getSimpleName(), clazz.getName());
 
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException("Could not find dynamic class: " + className, e);

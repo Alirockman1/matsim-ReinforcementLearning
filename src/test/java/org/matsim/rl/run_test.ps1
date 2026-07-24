@@ -1,5 +1,7 @@
 # --- PARAMETERS (Change these as needed to test your setup) ---
 $SERVICE_CLASS = "project.rl.networking.rl_bridge_service.ReinforcementLearningBridgeService"
+$OBSERVER_CLASS = "CustomRLObserver"
+$REPLANNER_CLASS = "CustomRLReplanner"
 $SCENARIO_NAME = "sioux-falls"
 $OBJECTIVE = "single" 
 
@@ -113,6 +115,8 @@ wsl docker run --rm -it `
     -e JAVA_HEAP="$MEMORY" `
     -e PARAMS="$PARAMS" `
     -e SCENARIO="$SCENARIO_NAME" `
+    -e REPLANNER_CLASS="$REPLANNER_CLASS" `
+    -e OBSERVER_CLASS="$OBSERVER_CLASS" `
     -e SERVICE_CLASS="$SERVICE_CLASS" `
     -v "${WSL_INPUT}:/app/scenarios/${SCENARIO_NAME}/input" `
     -v "${WSL_OUTPUT}:/app/scenarios/${SCENARIO_NAME}/output" `

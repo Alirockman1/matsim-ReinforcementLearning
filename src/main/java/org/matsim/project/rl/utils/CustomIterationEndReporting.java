@@ -1,19 +1,16 @@
-package org.matsim.rl.utils;
+package org.matsim.project.rl.utils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.controler.events.IterationEndsEvent;
-import org.matsim.withinday.utils.IterationEndReportingUtils;
+import org.matsim.withinday.utils.IterationEndReporting;
 import org.matsim.withinday.utils.WithinDayAgentExperience;
 
-public class CustomIterationEndReporting extends IterationEndReportingUtils{
+public class CustomIterationEndReporting extends IterationEndReporting{
 
     public static void writeAgentStatsCsv(IterationEndsEvent event, Map<Id<Person>, WithinDayAgentExperience> agentExperiences) {
         

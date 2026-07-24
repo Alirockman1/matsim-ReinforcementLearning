@@ -1,4 +1,4 @@
-package org.matsim.rl.core;
+package org.matsim.project.rl.core;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,7 +21,7 @@ import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.TripStructureUtils.Trip;
-import org.matsim.rl.utils.CustomConfigGroup;
+import org.matsim.project.rl.utils.CustomConfigGroup;
 import org.matsim.withinday.environment.StateEngine;
 import org.matsim.withinday.environment.StateEngine.GridPosition;
 import org.matsim.withinday.environment.WithinDayObserver;

@@ -2,7 +2,9 @@ import os
 import subprocess
 
 class WorkerNode:
-    def __init__(self, output_directory, config_file_path, matsim_iteration, num_threads, training_iteration, learning_rate, gamma, epsilon_decay, min_epsilon, penalty_weights = [1.0,1.0], java_heap="12g"):
+    def __init__(self, output_directory, config_file_path, matsim_iteration, num_threads, training_iteration, 
+                learning_rate, gamma, epsilon_decay, min_epsilon, replanner_class, observer_class,
+                penalty_weights = [1.0,1.0], java_heap="12g"):
         """
         Initializes the distributed worker tuning node."""
 
@@ -18,6 +20,9 @@ class WorkerNode:
         self._min_epsilon = min_epsilon
 
         self._java_heap = java_heap
+
+        self._replanner_class = replanner_class
+        self._observer_class = observer_class
 
         if len(penalty_weights) == 2:
             self._discontinuity_weight = penalty_weights[0]
@@ -51,5 +56,11 @@ class WorkerNode:
             f"--config:agentModeChoice.discontinuityPenalty={self._discontinuity_weight}",
             f"--config:agentModeChoice.retrievalCostPenalty={self._retrieval_cost_weight}"
         ]
+
+        if self._replanner_class and self._replanner_class != "default":
+            cmd.append(f"--config:withinday.replanner={self._replanner_class}")
+
+        if self._observer_class and self._observer_class != "default":
+            cmd.append(f"--config:withinday.observer={self._observer_class}")
 
         subprocess.run(cmd, check=True, env=os.environ)

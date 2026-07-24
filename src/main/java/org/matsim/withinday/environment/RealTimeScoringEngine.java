@@ -17,7 +17,7 @@ import org.matsim.core.config.groups.ScoringConfigGroup.ScoringParameterSet;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.router.TripStructureUtils.Trip;
 import org.matsim.core.utils.misc.OptionalTime;
-import org.matsim.rl.utils.CustomConfigGroup;
+import org.matsim.project.rl.utils.CustomConfigGroup;
 
 import com.google.inject.Inject;
 

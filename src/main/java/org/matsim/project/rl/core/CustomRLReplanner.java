@@ -28,6 +28,7 @@ import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.utils.WithinDayAgentExperience;
 
 import com.google.gson.Gson;
+import com.google.inject.Inject;
 
 import org.matsim.core.utils.timing.TimeInterpretation;
 import org.matsim.project.rl.utils.CustomConfigGroup;
@@ -51,6 +52,7 @@ public class CustomRLReplanner extends WithinDayReplanner {
      * @param customObserver             Observer for extracting environment states and trip scores.
      * @param pythonCommunicationManager HTTP communication manager for external decision models.
      */
+    @Inject
     public CustomRLReplanner(Scenario scenario, TripRouter router, TimeInterpretation timeInterpretation,
                               WithinDayObserver customObserver, CommunicationManager pythonCommunicationManager, CustomConfigGroup customConfigGroup) {
         super(scenario, router,timeInterpretation, customObserver, pythonCommunicationManager);

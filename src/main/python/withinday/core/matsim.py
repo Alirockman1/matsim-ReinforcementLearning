@@ -16,6 +16,8 @@ def run_matsim_within_optuna(scenario):
 def run_single_instance(scenario):
 
     params_string = os.environ.get("PARAMS", "")
+    replanner_class = os.environ.get("REPLANNER_CLASS", "default")
+    observer_class = os.environ.get("OBSERVER_CLASS", "default")
 
     params_dictionary = {}
 
@@ -26,6 +28,8 @@ def run_single_instance(scenario):
                 params_dictionary[key] = value
     
     worker = WorkerNode(
+        replanner_class=replanner_class,
+        observer_class=observer_class,
         output_directory=os.environ.get("MATSIM_OUTPUT_BASE"),
         config_file_path=f"/app/scenarios/{scenario}/input/config.xml",
         matsim_iteration=os.environ.get("MATSIM_ITERATION"),
