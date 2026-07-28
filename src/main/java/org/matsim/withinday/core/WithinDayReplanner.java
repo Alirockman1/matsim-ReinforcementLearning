@@ -2,6 +2,7 @@ package org.matsim.withinday.core;
 
 import com.google.gson.Gson;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;

@@ -16,10 +16,12 @@ import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.TripStructureUtils.Trip;
+import org.matsim.project.rl.utils.CustomConfigGroup;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +36,10 @@ public class AgentAssetInventory {
     private static final Map<Id<Person>, Id<Link>> startOfDayLocations = new ConcurrentHashMap<>();
     private static final Map<Id<Person>, Boolean> agentTourStatus = new ConcurrentHashMap<>();
     
+    // Global Mode Sets initialized once from Config
+    private static final Set<String> ALL_MODES = ConcurrentHashMap.newKeySet();
+    private static final Set<String> TOUR_BASED_MODES = ConcurrentHashMap.newKeySet();
+
     private static final Id<Link> DUMMY_RESTRICTED_LINK = Id.createLinkId("99999999");
 
     public static synchronized void reset() {
@@ -41,27 +47,21 @@ public class AgentAssetInventory {
         startOfDayLocations.clear();
         agentLastLink.clear();
         agentTourStatus.clear();
+        ALL_MODES.clear();
+        TOUR_BASED_MODES.clear();
     }
 
     // This method initialize the location of agents and the modes
-    public static void initializeModeLocationTagging(Scenario scenario, Logger log){
+    public static void initializeModeLocationTagging(Scenario scenario){
+        // Initialize the modes available in the network
+        CustomConfigGroup configGroup = (CustomConfigGroup) scenario.getConfig().getModule(CustomConfigGroup.GROUP_NAME);
+        if (configGroup != null) {
+            parseAndAddModes(configGroup.getModes(), ALL_MODES);
+            parseAndAddModes(configGroup.getTourBasedModes(), TOUR_BASED_MODES);
+        }
 
         // All individuals in the population file
         Collection<? extends Person> persons = scenario.getPopulation().getPersons().values();
-
-        // 1. Parse all configured modes
-        String modesConfig = scenario.getConfig().getModules().get("agentModeChoice").getParams().get("modes");
-        String tourModesConfig = scenario.getConfig().getModules().get("agentModeChoice").getParams().get("tourBasedModes");
-
-        Set<String> allModes = new HashSet<>();
-        if (modesConfig != null) {
-            for (String m : modesConfig.split("\\s*,\\s*")) allModes.add(m.trim().toLowerCase());
-        }
-
-        Set<String> tourBasedModes = new HashSet<>();
-        if (tourModesConfig != null) {
-            for (String m : tourModesConfig.split("\\s*,\\s*")) tourBasedModes.add(m.trim().toLowerCase());
-        }
 
         // Attach a Geo-tag for each inidvidual in the scenario
         for (Person person : persons){
@@ -85,9 +85,9 @@ public class AgentAssetInventory {
 
                 setStartOfDayLocation(agentID, startLinkID);
                 
-                for (String mode : allModes) {
+                for (String mode : ALL_MODES) {
 
-                    boolean isAssetAvailable = checkAssetAvailability(person, mode, tourBasedModes);
+                    boolean isAssetAvailable = checkAssetAvailability(person, mode);
 
                     if (!isAssetAvailable) {
                         setModeLocation(agentID, mode, Id.createLinkId("99999999"));
@@ -107,9 +107,21 @@ public class AgentAssetInventory {
         log.info("Geo-Tags attached to all agents in the environment.");
     }
 
-    private static boolean checkAssetAvailability(Person person, String mode, Set<String> tourBasedModes) {
+    private static void parseAndAddModes(String rawString, Set<String> targetSet) {
+        if (rawString == null || rawString.trim().isEmpty()) {
+            return;
+        }
+        
+        Arrays.stream(rawString.split("\\s*,\\s*"))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .map(String::toLowerCase)
+            .forEach(targetSet::add);
+    }
 
-        if (!tourBasedModes.contains(mode)) {
+    private static boolean checkAssetAvailability(Person person, String mode) {
+
+        if (!TOUR_BASED_MODES.contains(mode)) {
             return true;
         }
 
@@ -126,8 +138,8 @@ public class AgentAssetInventory {
     }
 
     // This method updates the location of vehicels
-    public static void updateModeLocation(Id<Person> agentId, Id<Link> currentLink, Id<Link> previousLink, String currentModeUsed, List<String> allModes,
-        List<String> tourBasedModes, Map<String, Integer> modeDiscontinuityPenalty){
+    public static void updateModeLocation(Id<Person> agentId, Id<Link> currentLink, Id<Link> previousLink, 
+        String currentModeUsed, Map<String, Integer> modeDiscontinuityPenalty){
 
         Map<String, Integer> discontinuityPenaltyMap = modeDiscontinuityPenalty(previousLink, agentId);
         //Map<String, Integer> modeDiscontinuityPenalty1 = ModeUtils.modeDiscontinuityPenalty(previousLink.toString(),previousInventorySnapshot);
@@ -136,14 +148,14 @@ public class AgentAssetInventory {
         int discontinuityFlag = discontinuityPenaltyMap.getOrDefault(currentModeUsed, 0);
 
         // Update all service modes
-        for (String mode: allModes){
-            if (!tourBasedModes.contains(mode)) {
+        for (String mode: ALL_MODES){
+            if (!TOUR_BASED_MODES.contains(mode)) {
                 setModeLocation(agentId, mode, currentLink);
             }
         }
 
         // Update asset modes (if Legal trip)
-        if (tourBasedModes.contains(currentModeUsed)) {
+        if (TOUR_BASED_MODES.contains(currentModeUsed)) {
             if (discontinuityFlag == 0) {
                 setModeLocation(agentId, currentModeUsed, currentLink);
             }else{
@@ -179,7 +191,7 @@ public class AgentAssetInventory {
     }
 
     // GETTER: Retrieval times incase of abandoned mode
-    public static Double getModeRetrievalTimes(MobsimAgent agent, Scenario scenario, int currentTripIndex, List<String> tourBasedModes, Logger log){
+    public static Double getModeRetrievalTimes(MobsimAgent agent, Scenario scenario, int currentTripIndex, Logger log){
 
         Double modeRetrievalTime = 0.0;
 
@@ -190,7 +202,7 @@ public class AgentAssetInventory {
 
         Activity firstActivity = (Activity) WithinDayAgentUtils.getModifiablePlan(agent).getPlanElements().get(0);
 
-        for (String assetMode : tourBasedModes) {
+        for (String assetMode : TOUR_BASED_MODES) {
             Id<Link> vehicleLocation = currentInventory.get(assetMode);
 
             if (!vehicleLocation.toString().contains("99999999")){
@@ -261,6 +273,12 @@ public class AgentAssetInventory {
         return modeRetrievalTime;
 
     }
+
+    // GETTER: All simulation mdoes
+    public static Set<String> getAllModes() { return Collections.unmodifiableSet(ALL_MODES); }
+    
+    // GETTER: Tour based modes specified in the config
+    public static Set<String> getTourBasedModes() { return Collections.unmodifiableSet(TOUR_BASED_MODES); }
 
     // SETTER: Update the tour plan for agents
     public static void setTourBasedPlan(Id<Person> agentId, boolean isTour) {

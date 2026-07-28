@@ -149,7 +149,17 @@ public class StateEngine{
         return Integer.SIZE - Integer.numberOfLeadingZeros(maxValue - 1);
     }
 
-    public static int[] convertToBitStateRepresentation(int rawState, int bitWidth) {
+    /**
+     * Converts an integer state value into a fixed-width binary bit array.
+     * The bit width is calculated dynamically based on the maximum possible value (maxVal).
+     *
+     * @param rawState The actual integer value to encode (e.g., current time bin or asset state).
+     * @param maxVal   The maximum possible integer value this feature can take.
+     * @return An int[] containing the binary representation padded to the required bit width.
+     */
+    public static int[] convertToBitStateRepresentation(int rawState, int stateLength) {
+        int maximumStateValue = stateLength - 1;
+        int bitWidth = (maximumStateValue <= 0) ? 1 : 32 - Integer.numberOfLeadingZeros(maximumStateValue);
         int[] bits = new int[bitWidth];
 
         for (int i = 0; i < bitWidth; i++) {

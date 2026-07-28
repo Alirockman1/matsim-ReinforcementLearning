@@ -16,23 +16,23 @@ public class CustomConfigGroup extends ReflectiveConfigGroup {
     private static final String WEIGHTS_SET_TYPE = "modelWeights";
 
     private String modelType;
-    private String modelFileName;
+    private String modelFileName = "";
+    private String autoEncoderModel = "";
+    private boolean isAllowAllAgents = false;
+    private int saveInterval = 1;
+    private String agentFilterList = "";
+    private double discontinuityPenalty = 1.0;
+    private double retrievalCostPenalty = 1.5;
+    private double samplingPercentage = 1.0;
+
     private double alpha;
     private double gamma;
     private double epsilon;
     private double epsilonDecay;
     private double epsilonMinimum;
     private int trainingCutoffIteration;
-    private String agentFilterList;
-    private int saveInterval;
-    private boolean isAllowAllAgents;
     private String modes;
     private String tourModesList;
-    private String autoEncoderModel;
-    private double samplingPercentage;
-
-    private double discontinuityPenalty = 1.0;
-    private double retrievalCostPenalty = 1.5;
 
     public CustomConfigGroup() {
         super(GROUP_NAME);
@@ -123,7 +123,15 @@ public class CustomConfigGroup extends ReflectiveConfigGroup {
     public String getAgentFilterList() { return agentFilterList; }
 
     @StringSetter("agentFilterList")
-    public void setAgentFilterList(String agentFilterList) { this.agentFilterList = agentFilterList; }
+    public void setAgentFilterList(String agentFilterList) { 
+        this.agentFilterList = agentFilterList;
+            
+            if (agentFilterList == null || agentFilterList.trim().isEmpty()) {
+                this.isAllowAllAgents = true;
+            } else {
+                this.isAllowAllAgents = false;
+            }
+    }
 
     @StringGetter("saveInterval")
     public int getSaveInterval() { return saveInterval; }
@@ -132,7 +140,12 @@ public class CustomConfigGroup extends ReflectiveConfigGroup {
     public void setSaveInterval(int saveInterval) { this.saveInterval = saveInterval; }
 
     @StringGetter("allowAllAgents")
-    public boolean getIsAllowAllAgents() { return isAllowAllAgents; }
+    public boolean getIsAllowAllAgents() {
+        if (this.agentFilterList == null || this.agentFilterList.trim().isEmpty()) {
+            return true;
+        }
+        return this.isAllowAllAgents;
+    }
 
     @StringSetter("allowAllAgents")
     public void setIsAllowAllAgents(boolean isAllowAllAgents) { this.isAllowAllAgents = isAllowAllAgents; }

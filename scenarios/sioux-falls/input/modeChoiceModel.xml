@@ -4,7 +4,7 @@
 <config>
     <module name="agentModeChoice">
         <param name="modelType" value="QLearning" />
-        <!--<param name="autoEncoderModel" value="matsim_encoder_dim8.onnx" />-->
+        <param name="autoEncoderModel" value="matsim_binary_encoder_dim15.onnx" />
         <param name="saveInterval" value="10" /> 
         <param name="trainingCutoffIteration" value="800" /> 
         <param name="samplingPercentage" value="0.20" />

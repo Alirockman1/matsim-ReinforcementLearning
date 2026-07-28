@@ -28,6 +28,7 @@ import org.matsim.project.rl.core.CustomRLReplanner;
 import org.matsim.project.rl.utils.CustomConfigGroup;
 import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
+import org.matsim.withinday.networking.UnixSocketCommunicationManager;
 import org.matsim.withinday.trafficmonitoring.WithinDayTravelTime;
 import org.matsim.withinday.utils.WithinDayConfigGroup;
 
@@ -96,8 +97,8 @@ public class RunExternalModeChoice {
             @Override
             public void install() {
                 // Inter-Platform Communication Manager
-                bind(CommunicationManager.class).asEagerSingleton();
-                addControllerListenerBinding().to(CommunicationManager.class);
+                bind(CommunicationManager.class).to(UnixSocketCommunicationManager.class).asEagerSingleton();
+                addControllerListenerBinding().to(UnixSocketCommunicationManager.class);
 
                 // Observer & Replanner
                 bindDynamicClass(WithinDayObserver.class, observerClass, CustomRLObserver.class);

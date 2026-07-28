@@ -151,10 +151,8 @@ public class CustomRLReplanner extends WithinDayReplanner {
         // --- UPDATING INVENTORY FOR New Location ---
         // Get all modes (including tour based modes - i.e resources)
         Id<Link> currentLinkId = agent.getCurrentLinkId();
-        List<String> allModes = Arrays.asList(scenario.getConfig().getModules().get("agentModeChoice").getParams().get("modes").split("\\s*,\\s*"));
-        List<String> tourBasedModes = Arrays.asList(scenario.getConfig().getModules().get("agentModeChoice").getParams().get("tourBasedModes").split("\\s*,\\s*")); 
 
-        AgentAssetInventory.updateModeLocation(agentId, currentLinkId, previousLinkId, currentModeUsed, allModes, tourBasedModes, modeDiscontinuityPenaltyMap);
+        AgentAssetInventory.updateModeLocation(agentId, currentLinkId, previousLinkId, currentModeUsed, modeDiscontinuityPenaltyMap);
 
         System.out.println("The current mode location at " + currentLinkId.toString() + " is: " + AgentAssetInventory.getModeLocation(agentId));
 
@@ -164,7 +162,7 @@ public class CustomRLReplanner extends WithinDayReplanner {
         double modeRetrievalTime = 0.0;
 
         if (isTour) {
-            modeRetrievalTime = AgentAssetInventory.getModeRetrievalTimes(agent, this.scenario, currentTripIndex, tourBasedModes, this.log);
+            modeRetrievalTime = AgentAssetInventory.getModeRetrievalTimes(agent, this.scenario, currentTripIndex, this.log);
         }
 
         RealTimeScoringEngine rewardCalculator = this.customObserver.tripEvaluationMetrics(
@@ -213,6 +211,8 @@ public class CustomRLReplanner extends WithinDayReplanner {
 
         String response = communicationManager.httpPost(jsonStep, "/feedback/score", 360);
 
+        log.info("COMMUNICATION NET: Transmitting next step for agent {}", agentId);
+
         if (response != null && !response.isEmpty()) {
             try {
                 Map<String, Object> responseMap = gson.fromJson(response, HashMap.class);
@@ -233,7 +233,7 @@ public class CustomRLReplanner extends WithinDayReplanner {
             log.error("COMMUNICATION NET: Null or empty response received from /feedback/score for agent " + agentId);
         }
 
-        // ALWAYS record the trip step so experiencedModes, rewards, scores, and deltaQ stay synchronized!
+        // Always record the trip step so experiencedModes, rewards, scores, and deltaQ stay synchronized!
         experience.recordTrip(currentModeUsed, currentStepReward, currentStepMatsimScore, stepDeltaQ);
     }
 

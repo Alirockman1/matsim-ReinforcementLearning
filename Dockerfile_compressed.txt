@@ -4,6 +4,9 @@ FROM python:3.12-slim-bookworm
 # Install pipenv
 RUN pip install pipenv
 
+# Create the app directory and the temp folder
+RUN mkdir -p /app/temp
+
 WORKDIR /app
 
 # Install C compiler

@@ -92,20 +92,6 @@ MobsimAfterSimStepListener, ActivityStartEventHandler {
     public void notifyStartup(StartupEvent event) {
         this.agentSelector = new AgentSelector(scenario, 42L, log);
         this.customReplanner.initializeModel();
-
-        /*
-        //  Initialize the encoder model
-        URL context = config.getContext(); 
-        String encoderModelPath = customConfigGroup.getEncoderModel();
-        URL absoluteModelUrl = ConfigGroup.getInputFileURL(context, encoderModelPath);
-
-        String finalModelPath;
-        try {
-            finalModelPath = Paths.get(absoluteModelUrl.toURI()).toAbsolutePath().toString();
-        } catch (URISyntaxException e) {
-            log.error("Failed to convert model URL to a valid URI path: " + e.getMessage(), e);
-            finalModelPath = encoderModelPath;
-        }*/
     }
 
 
@@ -122,14 +108,14 @@ MobsimAfterSimStepListener, ActivityStartEventHandler {
         }
 
         this.agentSelector.sampleAgentsForIteration(event.getIteration(), samplingPercentage, fixedAgentIds);
-        
-        // Initialize the tour based modes
-        String[] tourBasedModes = scenario.getConfig().getModules().get("agentModeChoice").getParams().get("tourBasedModes").split("\\s*,\\s*");
-        StateEngine.setModeAvailabilityLookup(tourBasedModes);
 
         // Start tagging each agents mode geo location [CHANGE TO ONLY THE FILTED AGENTS]
         log.info("Initializing Mode Location Tagging for all RL agents at start of iteration {}", event.getIteration());
-        AgentAssetInventory.initializeModeLocationTagging(this.scenario, this.log);
+        AgentAssetInventory.initializeModeLocationTagging(this.scenario);
+
+        // Initialize the tour based modes
+        String[] tourBasedModes = AgentAssetInventory.getTourBasedModes().toArray(String[]::new);
+        StateEngine.setModeAvailabilityLookup(tourBasedModes);
     }
 
     /**

@@ -1,9 +1,14 @@
 package org.matsim.project.rl.core;
 
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.file.Paths;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,23 +21,32 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigGroup;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.mobsim.qsim.agents.WithinDayAgentUtils;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.TripStructureUtils.Trip;
 import org.matsim.project.rl.utils.CustomConfigGroup;
+import org.matsim.withinday.environment.AgentAssetInventory;
 import org.matsim.withinday.environment.StateEngine;
 import org.matsim.withinday.environment.StateEngine.GridPosition;
 import org.matsim.withinday.environment.WithinDayObserver;
 
 import com.google.inject.Inject;
 
+import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OrtEnvironment;
+import ai.onnxruntime.OrtSession;
+
 public class CustomRLObserver extends WithinDayObserver {
     private static final Logger log = LogManager.getLogger(CustomRLObserver.class);
     private static final NavigableMap<Double, Integer> CUSTOM_TIME_BIN_LOOKUP = new TreeMap<>();
     private final Config config;
     private final String[] tourBasedModes;
+    private OrtEnvironment onnxEnvironment;
+    private OrtSession autoEncoderSession;
+    private String inputNodeName;
 
     /**
      * Maps high-fidelity continuous clock seconds into discrete temporal partitions.
@@ -55,9 +69,20 @@ public class CustomRLObserver extends WithinDayObserver {
     public CustomRLObserver(Scenario scenario) {
         super(scenario, log);
         this.config = scenario.getConfig();
-        this.tourBasedModes = config.getModules().get("agentModeChoice").getParams().get("tourBasedModes").split("\\s*,\\s*"); 
-
+        this.tourBasedModes = AgentAssetInventory.getTourBasedModes().toArray(new String[0]);
         StateEngine.setCustomTimeBinLookup(CUSTOM_TIME_BIN_LOOKUP);
+
+        CustomConfigGroup customConfigGroup = (CustomConfigGroup) scenario.getConfig().getModule(CustomConfigGroup.GROUP_NAME);
+
+        if (customConfigGroup != null) {
+            String encoderModelPath = customConfigGroup.getEncoderModel();
+
+            if (encoderModelPath != null && !encoderModelPath.trim().isEmpty()) {
+                initializeAutoEncoder(scenario.getConfig().getContext(), encoderModelPath);
+            } else {
+                log.info("No AutoEncoder model specified in config. Skipping ONNX initialization.");
+            }
+        }
     }
 
     @Override
@@ -79,7 +104,8 @@ public class CustomRLObserver extends WithinDayObserver {
         boolean isEndOfDay = (targetTripIndex >= allTrips.size());
 
         // Mode set for the agent
-        List<String> availableModes = getFilteredAvailableModes();
+        //List<String> availableModes = getFilteredAvailableModes();
+        List<String> availableModes = new ArrayList<>(AgentAssetInventory.getAllModes());
 
         // Current activity location
         Activity currentActivity = trip.getOriginActivity();
@@ -109,19 +135,16 @@ public class CustomRLObserver extends WithinDayObserver {
             int[] currentPositionBits = StateEngine.oneHotEncodePosition(currentDiscretePosition.cellIndex(),currentDiscretePosition.gridShape());
             int[] nextPositionBits = StateEngine.oneHotEncodePosition(nextDiscretePosition.cellIndex(),nextDiscretePosition.gridShape());
 
+            // Sequential Vector Assembly
             int totalLength = currentPositionBits.length + nextPositionBits.length + timeBits.length + 1 + assetBits.length;
-            IntBuffer stateBuffer = ByteBuffer.allocate(totalLength * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
-            stateBuffer.put(currentPositionBits);
-            stateBuffer.put(nextPositionBits);
-            stateBuffer.put(timeBits);
-            stateBuffer.put((int) rawStateSpace.get("scheduledActivityFlexibility"));
-            stateBuffer.put(assetBits);
-
+            int offset = 0;            
+            
             rawBitStateSpace = new int[totalLength];
-            stateBuffer.flip();
-            stateBuffer.get(rawBitStateSpace);
-
-            // Compressed Latent bit state
+            offset = appendBits(rawBitStateSpace, offset, currentPositionBits);
+            offset = appendBits(rawBitStateSpace, offset, nextPositionBits);
+            offset = appendBits(rawBitStateSpace, offset, timeBits);
+            offset = appendBit(rawBitStateSpace, offset, 1);
+            offset = appendBits(rawBitStateSpace, offset, assetBits);
 
         }else{
 
@@ -134,20 +157,34 @@ public class CustomRLObserver extends WithinDayObserver {
             int[] assetBits = StateEngine.convertToBitStateRepresentation(assetState,StateEngine.getAssetBinSize());
             int[] currentPositionBits = StateEngine.oneHotEncodePosition(currentDiscretePosition.cellIndex(),currentDiscretePosition.gridShape());
 
-            int totalLength = currentPositionBits.length + assetBits.length;
-            IntBuffer stateBuffer = ByteBuffer.allocate(totalLength * Integer.BYTES).order(ByteOrder.nativeOrder()).asIntBuffer();
-            stateBuffer.put(currentPositionBits);
-            stateBuffer.put(assetBits);
-
+            // Sequential Vector Assembly
+            int totalLength = currentPositionBits.length + currentPositionBits.length + StateEngine.getTimeBinSize("demand_based") + 1 + assetBits.length;
+            int offset = 0;
+            
             rawBitStateSpace = new int[totalLength];
-            stateBuffer.flip();
-            stateBuffer.get(rawBitStateSpace);
+            offset = appendBits(rawBitStateSpace, offset, currentPositionBits);
+            offset += currentDiscretePosition.gridShape() + StateEngine.getTimeBinSize("demand_based") + 1;
+            offset = appendBits(rawBitStateSpace, offset, assetBits);
+        }
 
+        // Compressed Latent bit state
+        float[] latentBitStateSpace = null;
+        int[] latentBitStateSpaceInt = null;
+        if (!isEndOfDay && hasAutoEncoder()) {
+            latentBitStateSpace = encodeBitStateWithONNX(rawBitStateSpace);
+
+            if (latentBitStateSpace!= null) {
+                latentBitStateSpaceInt = new int[latentBitStateSpace.length];
+                for (int i = 0; i < latentBitStateSpace.length; i++) {
+                    latentBitStateSpaceInt[i] = Math.round(latentBitStateSpace[i]);
+                }
+            }
         }
 
         observation.put("endOfDayFlag", isEndOfDay);
         observation.put("agentID", agent.getId().toString());
         observation.put("rawBitStateRepresentation", rawBitStateSpace);
+        observation.put("latentBitStateRepresentation", latentBitStateSpaceInt);        
         observation.put("possibleModeSet", availableModes);
         observation.put("rawStateObservation", rawStateSpace);
         
@@ -199,18 +236,100 @@ public class CustomRLObserver extends WithinDayObserver {
     }
 
     /**
-     * Isolates acceptable alternative option configurations.
+     * Appends a source array of bits into a destination bit vector starting at the specified offset.
+     * <p>
+     * Uses {@link System#arraycopy} for native memory copying performance without allocating 
+     * intermediate objects.
+     * </p>
+     *
+     * @param dest   The target binary state array being populated.
+     * @param offset The current write position index in the destination array.
+     * @param src    The source bit array to copy (e.g., position bits, time bits, or asset bits).
+     * @return The updated offset index pointing to the next available position in {@code dest}.
      */
-    private List<String> getFilteredAvailableModes() {
-        List<String> modes = new ArrayList<>(this.config.scoring().getAllModes());
-        modes.removeIf(mode -> 
-            mode.equalsIgnoreCase("ride") || 
-            mode.equalsIgnoreCase("other") || 
-            mode.equalsIgnoreCase("rl") ||
-            mode.equalsIgnoreCase("walk")
-        );
-        return modes;
+    private int appendBits(int[] dest, int offset, int[] src) {
+        System.arraycopy(src, 0, dest, offset, src.length);
+        return offset + src.length;
     }
 
+    /**
+     * Appends a single scalar bit value into a destination bit vector at the specified offset.
+     *
+     * @param dest     The target binary state array being populated.
+     * @param offset   The current write position index in the destination array.
+     * @param bitValue The single integer bit value (e.g., 0 or 1 for flexibility).
+     * @return The updated offset index incremented by 1.
+     */
+    private int appendBit(int[] dest, int offset, int bitValue) {
+        dest[offset] = bitValue;
+        return offset + 1;
+    }
 
+    /**
+     * Helper method to resolve path and initialize the ONNX session once.
+     */
+    private void initializeAutoEncoder(URL configContext, String encoderModelPath) {
+        try {
+            URL absoluteModelUrl = ConfigGroup.getInputFileURL(configContext, encoderModelPath);
+            String finalModelPath = Paths.get(absoluteModelUrl.toURI()).toAbsolutePath().toString();
+
+            // Create ONNX Environment and Session
+            this.onnxEnvironment = OrtEnvironment.getEnvironment();
+            OrtSession.SessionOptions options = new OrtSession.SessionOptions();
+            this.autoEncoderSession = this.onnxEnvironment.createSession(finalModelPath, options);
+            
+            // Fetch input node name dynamically
+            if (!this.autoEncoderSession.getInputNames().isEmpty()) {
+                this.inputNodeName = this.autoEncoderSession.getInputNames().iterator().next();
+            } else {
+                this.inputNodeName = "input_136";
+            }
+            
+            log.info("Successfully initialized ONNX AutoEncoder using input node: {}", this.inputNodeName);
+
+        } catch (Exception e) {
+            log.error("Failed to load ONNX AutoEncoder model from path: " + encoderModelPath, e);
+            this.autoEncoderSession = null;
+        }
+    }
+
+    // Optional helper to check if ONNX is active
+    public boolean hasAutoEncoder() {
+        return this.autoEncoderSession != null;
+    }
+
+    /**
+     * Encodes the raw int[] bit vector directly into the latent space float vector.
+     */
+    public float[] encodeBitStateWithONNX(int[] rawBitState) {
+        if (!hasAutoEncoder() || rawBitState == null || rawBitState.length == 0) {
+            return null;
+        }
+
+        try {
+            int length = rawBitState.length;
+            float[] floatInput = new float[length];
+
+            // Convert int bits to float tensor elements directly
+            for (int i = 0; i < length; i++) {
+                floatInput[i] = (float) rawBitState[i];
+            }
+
+            long[] inputShape = new long[]{1, length};
+            FloatBuffer floatBuffer = FloatBuffer.wrap(floatInput);
+
+            try (OnnxTensor inputTensor = OnnxTensor.createTensor(this.onnxEnvironment, floatBuffer, inputShape)) {
+                try (OrtSession.Result results = this.autoEncoderSession.run(Collections.singletonMap(this.inputNodeName, inputTensor))) {
+                    float[][] outputMatrix = (float[][]) results.get(0).getValue();
+                    return outputMatrix[0];
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error during ONNX AutoEncoder transform: " + e.getMessage(), e);
+            return null;
+        }
+    }
 }
