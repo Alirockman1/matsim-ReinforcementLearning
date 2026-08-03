@@ -48,7 +48,7 @@ import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.withinday.environment.AgentAssetInventory;
-import org.matsim.withinday.environment.RealTimeScoringEngine;
+import org.matsim.withinday.environment.MatsimScoreTracker;
 import org.matsim.withinday.environment.StateEngine;
 import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
@@ -80,6 +80,7 @@ MobsimAfterSimStepListener, ActivityStartEventHandler {
     @Inject WithinDayReplanner customReplanner;
     @Inject WithinDayObserver customObserver;
     @Inject CustomConfigGroup customConfigGroup;
+    @Inject MatsimScoreTracker scoreTracker;
 
     private AgentSelector agentSelector;
     private Map<Id<Person>, Double> activityStartTimeByAgent = new HashMap<>();
@@ -108,6 +109,9 @@ MobsimAfterSimStepListener, ActivityStartEventHandler {
         }
 
         this.agentSelector.sampleAgentsForIteration(event.getIteration(), samplingPercentage, fixedAgentIds);
+
+        // Give every sampled agent a fresh MATSim scoring function for this iteration
+        this.scoreTracker.beginIteration(this.agentSelector.getSelectedAgents());
 
         // Start tagging each agents mode geo location [CHANGE TO ONLY THE FILTED AGENTS]
         log.info("Initializing Mode Location Tagging for all RL agents at start of iteration {}", event.getIteration());

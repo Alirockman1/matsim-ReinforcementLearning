@@ -26,6 +26,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.project.rl.core.CustomRLObserver;
 import org.matsim.project.rl.core.CustomRLReplanner;
 import org.matsim.project.rl.utils.CustomConfigGroup;
+import org.matsim.withinday.environment.MatsimScoreTracker;
 import org.matsim.withinday.environment.WithinDayObserver;
 import org.matsim.withinday.networking.CommunicationManager;
 import org.matsim.withinday.networking.UnixSocketCommunicationManager;
@@ -103,6 +104,10 @@ public class RunExternalModeChoice {
                 // Observer & Replanner
                 bindDynamicClass(WithinDayObserver.class, observerClass, CustomRLObserver.class);
                 bindDynamicClass(WithinDayReplanner.class, replannerClass, CustomRLReplanner.class);
+
+                // Live access to MATSim's own scoring (eager: the handlers must be registered before the first mobsim)
+                bind(MatsimScoreTracker.class).asEagerSingleton();
+                addEventHandlerBinding().to(MatsimScoreTracker.class);
 
                 // Within-Day Travel Time (Tracks 'car' and 'rl' modes)
                 WithinDayTravelTime travelTime = new WithinDayTravelTime(scenario, Set.of(REINFORCEMENT_MODE, TransportMode.car));

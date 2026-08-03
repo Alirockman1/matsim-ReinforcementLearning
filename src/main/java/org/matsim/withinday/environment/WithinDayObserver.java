@@ -11,7 +11,10 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.qsim.QSim;
 import org.matsim.core.router.TripStructureUtils.Trip;
+import org.matsim.core.scoring.functions.ScoringParametersForPerson;
 import org.matsim.project.rl.utils.CustomConfigGroup;
+
+import com.google.inject.Inject;
 
 /**
  * WithinDayObserver returns a snapshot of the matsim environment as a state representation.
@@ -24,6 +27,11 @@ public abstract class WithinDayObserver {
     private final Map<Id<Person>, Map<String, Object>> agentDemographicRegistry = new HashMap<>();
     protected final Logger log;
     protected final Scenario scenario;
+
+    /** Supplies MATSim's own score, accumulated live during the mobsim. Injected so that custom
+     * observers inherit it without having to widen their constructor. */
+    @Inject protected MatsimScoreTracker scoreTracker;
+    @Inject protected ScoringParametersForPerson scoringParametersForPerson;
 
     public WithinDayObserver(Scenario scenario, Logger log) {
         this.log = log;
@@ -67,7 +75,27 @@ public abstract class WithinDayObserver {
      * Gets or creates a RealTimeScoringEngine for the specified agent ID.
      */
     public RealTimeScoringEngine getOrCreateScoringEngine(Id<Person> agentId) {
-        return this.agentRewardCalculators.computeIfAbsent(agentId, id -> new RealTimeScoringEngine(this.scenario, this));
+        return this.agentRewardCalculators.computeIfAbsent(agentId, id -> new RealTimeScoringEngine(
+                this.scenario, this,
+                this.scoringParametersForPerson.getScoringParameters(this.scenario.getPopulation().getPersons().get(id))));
+    }
+
+    /**
+     * The score MATSim itself accumulated for this agent since the previous trip. Reading it consumes it.
+     */
+    public double consumeMatsimStepScore(Id<Person> agentId) {
+        return this.scoreTracker.consumeStepScore(agentId);
+    }
+
+    /**
+     * Closes the agent's day: hands the final MATSim score (including the overnight activity and the
+     * daily mode constants) to the reward engine.
+     */
+    public RealTimeScoringEngine finalizeDay(MobsimAgent agent, Activity finalActivity, double arrivalTime) {
+        RealTimeScoringEngine rewardCalculator = getOrCreateScoringEngine(agent.getId());
+        rewardCalculator.finalizeDay(this.scoreTracker.finishDay(agent.getId(), finalActivity, arrivalTime));
+
+        return rewardCalculator;
     }
 
     /**
@@ -105,17 +133,17 @@ public abstract class WithinDayObserver {
     }
 
     /**
-     * Method to compile immediate execution step utilities directly with the underlying RealTimeScoringEngine 
-     * to compile immediate execution step utilities.
+     * Method to compile immediate execution step utilities directly with the underlying RealTimeScoringEngine
+     * to compile immediate execution step utilities. The utility of the executed plan elements is taken
+     * from MATSim's own scoring; the engine only adds the within-day specific penalties on top.
      */
-    public RealTimeScoringEngine tripEvaluationMetrics(MobsimAgent agent, double currentTime, Activity activity, 
-                                String executedMode, Trip trip, double assetRetrievalTime, 
-                                int transferCount, Map<String, Integer> discontinuityPenalties) {
-        
+    public RealTimeScoringEngine tripEvaluationMetrics(MobsimAgent agent, String executedMode, Trip trip,
+                                double assetRetrievalTime, Map<String, Integer> discontinuityPenalties) {
+
         RealTimeScoringEngine rewardCalculator = getOrCreateScoringEngine(agent.getId());
 
-        rewardCalculator.compute(agent, currentTime, activity, executedMode, trip, 
-            assetRetrievalTime, transferCount, discontinuityPenalties);
+        rewardCalculator.compute(agent, consumeMatsimStepScore(agent.getId()), executedMode, trip,
+            assetRetrievalTime, discontinuityPenalties);
 
         return rewardCalculator;
     }

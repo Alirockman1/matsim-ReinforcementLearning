@@ -166,7 +166,7 @@ public class CustomRLReplanner extends WithinDayReplanner {
         }
 
         RealTimeScoringEngine rewardCalculator = this.customObserver.tripEvaluationMetrics(
-            agent, simulationTime, previousActivity, currentModeUsed, completedTrip, modeRetrievalTime, numberOfTransfers, modeDiscontinuityPenaltyMap
+            agent, currentModeUsed, completedTrip, modeRetrievalTime, modeDiscontinuityPenaltyMap
         );
 
         WithinDayAgentExperience experience = this.agentExperiences.computeIfAbsent(
@@ -181,7 +181,7 @@ public class CustomRLReplanner extends WithinDayReplanner {
         Map<String, Object> nextState = this.customObserver.observeState(agent, sim, completedTrip, simulationTime, true);
         
         if ((boolean) nextState.get("endOfDayFlag")){
-            rewardCalculator.computeDayEndScore(agent, trips, completedTrip.getDestinationActivity());
+            this.customObserver.finalizeDay(agent, completedTrip.getDestinationActivity(), simulationTime);
             log.info("The end of the day score for " + agentId.toString() + " is: " + rewardCalculator.getAccumulatedDayScore());
 
             experience.finalizeDay(
