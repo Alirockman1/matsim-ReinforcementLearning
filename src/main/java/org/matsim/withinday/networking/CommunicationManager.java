@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Singleton;
 
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.backup.RLModeChoiceListener;
 import org.matsim.core.controler.events.ShutdownEvent;
 import org.matsim.core.controler.events.StartupEvent;
 import org.matsim.core.controler.listener.ShutdownListener;
@@ -30,7 +29,7 @@ import java.util.Map;
 public class CommunicationManager implements StartupListener, ShutdownListener {
     
     // Get the base model without having to manually code it in
-    private static final Logger log = LogManager.getLogger(RLModeChoiceListener.class);
+    private static final Logger log = LogManager.getLogger(CommunicationManager.class);
 
     private String host = System.getenv("HPC_PYTHON_IP");
     private final int port;
