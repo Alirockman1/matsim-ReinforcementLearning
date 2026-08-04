@@ -17,8 +17,17 @@ $AGENT_ID = "10047_1"
 $UPDATE_JAR = $true
 $REBUILT_DOCKER = $true
 
-# Base Windows workspace directory 
-$BASE_WORKSPACE = "C:\Users\droeder\Documents\workspaces\workspace2\matsim-withinday-python"
+# Base Windows workspace directory: resolved by walking up from the script's own
+# location until pom.xml is found, so the pipeline is portable across checkouts.
+$BASE_WORKSPACE = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+while ($BASE_WORKSPACE -and !(Test-Path (Join-Path $BASE_WORKSPACE "pom.xml"))) {
+    $BASE_WORKSPACE = Split-Path $BASE_WORKSPACE -Parent
+}
+if (!$BASE_WORKSPACE) {
+    Write-Host "Error: could not locate the repository root (no pom.xml found above the script)." -ForegroundColor Red
+    exit 1
+}
+Write-Host "Resolved workspace root: $BASE_WORKSPACE" -ForegroundColor DarkGray
 
 # Ensure Docker service is running inside WSL silently as root
 Write-Host "Ensuring Docker daemon is active in WSL..." -ForegroundColor Yellow
