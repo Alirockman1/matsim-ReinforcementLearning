@@ -60,10 +60,10 @@ public class RunExternalModeChoice {
 
         // 2. Configure Output Directory and Suppress Unnecessary File Generation
         config.controller().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-        config.controller().setWritePlansInterval(0);
-        config.controller().setWriteEventsInterval(0);
+        config.controller().setWritePlansInterval(config.controller().getLastIteration());
+        config.controller().setWriteEventsInterval(config.controller().getLastIteration());
         config.controller().setWriteSnapshotsInterval(0);
-        config.controller().setCreateGraphsInterval(0);
+        config.controller().setCreateGraphsInterval(1);
         config.controller().setDumpDataAtEnd(false);
 
         // SUPPRESS MODESTATS & COVERAGE CHARTS (modeChoiceCoverage, ph_modestats, pkm_modestats)
