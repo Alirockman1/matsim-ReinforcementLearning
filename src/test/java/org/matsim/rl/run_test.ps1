@@ -18,7 +18,7 @@ $UPDATE_JAR = $true
 $REBUILT_DOCKER = $true
 
 # Base Windows workspace directory 
-$BASE_WORKSPACE = "C:\ResearchWork\Matsim_integration\Local\matsim-withinday-python"
+$BASE_WORKSPACE = "C:\Users\droeder\Documents\workspaces\workspace2\matsim-withinday-python"
 
 # Ensure Docker service is running inside WSL silently as root
 Write-Host "Ensuring Docker daemon is active in WSL..." -ForegroundColor Yellow
@@ -73,7 +73,7 @@ if ($OBJECTIVE -eq "single") {
 # 4. Compile Java Maven Project
 if ($UPDATE_JAR){
     Write-Host "Compiling Maven project..." -ForegroundColor Yellow
-    mvn clean install -DskipTests
+    .\mvnw.cmd clean install -DskipTests
 }
 
 # 5. Convert Windows paths to linux path for wsl container mapping compatibility
